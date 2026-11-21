@@ -2,7 +2,7 @@ import { state, save, replaceAll, resetAll, SUBJECT_COLORS, storageInfo } from '
 import { esc, today, downloadBlob, resizeImage, uid } from '../util.js';
 import { toast, confirmBox } from '../ui.js';
 import { icon } from '../icons.js';
-import { THEMES, FONTS, HAND_FONTS } from '../theme.js';
+import { THEMES, FONTS, fontPicker } from '../theme.js';
 import { WIDGETS, widgetList } from './home.js';
 import { BUILTIN } from '../quotes.js';
 
@@ -40,11 +40,11 @@ export default {
             <label class="btn sm">사진 고르기<input type="file" accept="image/*" data-bg hidden></label>${p.bgImage ? '<button class="btn sm danger" data-act="bg-del">없애기</button>' : ''}</div></label>
           ${p.bgImage ? `<label class="field"><span>배경 흐리게 ${p.bgDim}%</span><input type="range" min="0" max="90" step="5" data-p="bgDim" value="${p.bgDim}"></label>` : ''}
           <label class="field"><span>메모·글쓰기 기본 글씨체</span>
-            <div class="font-pick">${HAND_FONTS.map((f) => `<button type="button" data-memofont="${f.id}" class="${p.memoFont === f.id ? 'on' : ''}" style="font-family:${f.css}">${f.name}</button>`).join('')}</div></label>
+            ${fontPicker('memofont', p.memoFont)}</label>
         </div></div>
 
         <div class="card" id="widgets"><h3>${icon('home', 18)} 홈 위젯</h3>
-          <div class="seg">${[['study', '공부 모드'], ['life', '라이프 모드']].map(([k, l]) => `<button data-wmode="${k}" class="${wMode === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+          <div class="seg">${[['study', '공부'], ['life', '라이프'], ['daily', '데일리']].map(([k, l]) => `<button data-wmode="${k}" class="${wMode === k ? 'on' : ''}">${l}</button>`).join('')}</div>
           <ul class="list">${widgets.map((w, i) => `<li><input type="checkbox" data-won="${w.id}" ${w.on ? 'checked' : ''}><span class="txt">${WIDGETS[w.id]}</span>
             <button class="icon-btn" data-wmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="위로">↑</button><button class="icon-btn" data-wmove="${i}" data-dir="1" ${i === widgets.length - 1 ? 'disabled' : ''} aria-label="아래로">↓</button></li>`).join('')}</ul>
           <button class="btn sm mt" data-act="widgets-reset">기본 배치로</button>

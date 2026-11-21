@@ -5,11 +5,11 @@ import { state, save } from './store.js';
 import { loadImage, resizeImage, uid, esc } from './util.js';
 import { icon } from './icons.js';
 import { modal } from './ui.js';
-import { STICKERS, MOODS, WEATHERS, TAPES, stickerSvg, stickerDefaultW, tapeSvg, moodSvg, weatherSvg } from './art.js';
-import { HAND_FONTS, handFont } from './theme.js';
+import { STICKERS, MOODS, WEATHERS, ALL_TAPES, stickerSvg, stickerDefaultW, tapeSvg, moodSvg, weatherSvg, STICKER_GROUPS, PAPERS, paperSvg, paperDefaultW } from './art.js';
+import { handFont, fontPicker } from './theme.js';
 
 const W = 900, H = 1200, S = 1.5; // 논리 좌표 900×1200, 실제 픽셀 1.5배
-export const PAPERS = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지']];
+export const PAPER_STYLES = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지']];
 const INKS = ['#2b2522', '#5b5f66', '#8b6f5a', '#c4544a', '#e0896b', '#e2b448', '#6e9a6a', '#4f8fa8', '#4a6fc4', '#8a72c8', '#d97aa6', '#ffffff'];
 
 // ---------- 선 그리기 ----------
@@ -120,10 +120,33 @@ function hitStroke(s, x, y, r) {
   return false;
 }
 
+// ---------- 오늘의 기록 (영수증 스타일 카드) ----------
+export function receiptSvg(d) {
+  const rows = (d.rows || []).slice(0, 9);
+  const h = 118 + rows.length * 22 + (d.note ? 26 : 0);
+  let zig = `M0 0 H200 V${h - 8}`;
+  for (let x = 190, k = 1; x >= 0; x -= 10, k++) zig += ` L${x} ${h - 8 + (k % 2) * 8}`;
+  zig += 'Z';
+  const mono = "font-family=\"'Nanum Gothic Coding', 'Courier New', monospace\"";
+  return `<svg viewBox="0 0 200 ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="rsh" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".15"/></filter></defs>
+    <path d="${zig}" fill="#fffefb" filter="url(#rsh)"/>
+    <text x="100" y="26" text-anchor="middle" font-size="15" font-weight="700" ${mono} fill="#222" letter-spacing="2">TODAY RECORD</text>
+    <text x="100" y="44" text-anchor="middle" font-size="9" ${mono} fill="#666">${esc(d.date || '')}</text>
+    <path d="M12 54 H188" stroke="#222" stroke-dasharray="3 3"/>
+    ${rows.map((r, i) => `<text x="14" y="${74 + i * 22}" font-size="10.5" ${mono} fill="#333">${esc(r[0])}</text><text x="186" y="${74 + i * 22}" text-anchor="end" font-size="10.5" font-weight="700" ${mono} fill="#111">${esc(r[1])}</text>`).join('')}
+    <path d="M12 ${68 + rows.length * 22} H188" stroke="#222" stroke-dasharray="3 3"/>
+    ${d.note ? `<text x="100" y="${88 + rows.length * 22}" text-anchor="middle" font-size="10.5" ${mono} fill="#333">"${esc(d.note)}"</text>` : ''}
+    <g transform="translate(40 ${h - 40})">${Array.from({ length: 30 }, (_, i) => `<rect x="${i * 4}" y="0" width="${[1, 2, 1, 3][i % 4]}" height="18" fill="#222"/>`).join('')}</g>
+    <text x="100" y="${h - 14}" text-anchor="middle" font-size="7" ${mono} fill="#888">THANK YOU · ARCHIVE</text></svg>`;
+}
+
 // ---------- 아이템 ----------
 function itemInner(it) {
   if (it.k === 'sticker') return stickerSvg(it.ref);
   if (it.k === 'tape') return tapeSvg(it.ref);
+  if (it.k === 'paper') return paperSvg(it.ref);
+  if (it.k === 'record') return receiptSvg(it.data || {});
   if (it.k === 'photo') return `<div class="polaroid ${it.frame || 'polaroid'}"><img src="${it.src}" alt="" draggable="false"></div>`;
   if (it.k === 'text') return `<div class="ptext" style="font-family:${handFont(it.font).css};color:${it.color};font-size:${(it.f * handFont(it.font).scale).toFixed(2)}cqw">${esc(it.text)}</div>`;
   if (it.k === 'emoji') return `<span style="font-size:${it.s || 9}cqw;line-height:1">${esc(it.text)}</span>`;
@@ -139,7 +162,7 @@ function textEditor(it, onDone) {
   modal(`<h2>종이에 글쓰기<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <div class="form">
       <textarea data-t style="min-height:110px;font-size:20px;font-family:${handFont(font).css}">${esc(it.text)}</textarea>
-      <label class="field"><span>글씨체</span><div class="font-pick">${HAND_FONTS.map((f) => `<button type="button" data-font="${f.id}" class="${f.id === font ? 'on' : ''}" style="font-family:${f.css}">${f.name}</button>`).join('')}</div></label>
+      <div class="field"><span>글씨체</span>${fontPicker('font', font)}</div>
       <label class="field"><span>색</span><div class="row">${INKS.map((c) => `<button type="button" class="sw ${c === color ? 'on' : ''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div></label>
       <label class="field"><span>크기</span><input type="range" min="2.5" max="12" step="0.5" value="${it.f}" data-size></label>
       <div class="actions"><button class="btn" data-close>취소</button><button class="btn primary" data-ok>완료</button></div>
@@ -181,6 +204,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       <button class="tool" data-tool="text" title="글쓰기">${icon('text')}</button>
       <button class="tool" data-panel="sticker" title="스티커">${icon('sticker')}</button>
       <button class="tool" data-panel="tape" title="마스킹테이프">${icon('tape')}</button>
+      <button class="tool" data-panel="paper" title="메모지">${icon('paper')}</button>
       <label class="tool" title="사진 올리기">${icon('image')}<input type="file" accept="image/*" data-photo hidden></label>
       <span class="spacer"></span>
       <button class="tool" data-act="undo" title="실행 취소">${icon('undo')}</button>
@@ -194,7 +218,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     </div>
     <div class="pad-panel" data-panelbox hidden></div>
     <div class="row small" style="margin-bottom:8px"><span class="muted">내지</span>
-      <div class="chips">${PAPERS.map(([k, l]) => `<button class="chip ${page.paper === k ? 'on' : ''}" data-paper="${k}">${l}</button>`).join('')}</div></div>
+      <div class="chips">${PAPER_STYLES.map(([k, l]) => `<button class="chip ${page.paper === k ? 'on' : ''}" data-paper="${k}">${l}</button>`).join('')}</div></div>
     <div class="pad paper-${page.paper}">
       <div class="items"></div>
       <canvas width="${W * S}" height="${H * S}" data-ink></canvas>
@@ -255,7 +279,8 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
   }
   const zTop = () => Math.max(0, ...page.items.map((i) => i.z || 0)) + 1;
   function addItem(it) {
-    it.id = uid(); it.z = zTop();
+    it.id = uid();
+    it.z = it.k === 'paper' ? Math.min(1, ...page.items.map((i) => i.z || 1)) - 1 : zTop();
     page.items.push(it);
     selected = it;
     setTool('hand'); selected = it; renderItems(); changed();
@@ -269,18 +294,25 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
   }
 
   // ---------- 패널 (스티커 / 테이프) ----------
+  let stTab = '소품';
+  const ST_TABS = () => [['소품', STICKERS], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['감정', null], ['날씨', null]];
   function renderPanel() {
     const box = host.querySelector('[data-panelbox]');
     box.hidden = !panel;
     host.querySelectorAll('[data-panel]').forEach((b) => b.classList.toggle('on', b.dataset.panel === panel));
     if (!panel) return;
     if (panel === 'tape') {
-      box.innerHTML = `<div class="tape-grid">${TAPES.map((t) => `<button data-add-tape="${t.id}" title="${t.label}">${t.svg()}</button>`).join('')}</div>`;
+      box.innerHTML = `<div class="tape-grid">${ALL_TAPES().map((t) => `<button data-add-tape="${t.id}" title="${t.label}">${t.svg()}</button>`).join('')}</div>`;
+    } else if (panel === 'paper') {
+      box.innerHTML = `<div class="tiny muted">메모지를 붙이고 펜이나 글쓰기로 위에 써보세요</div><div class="st-grid paper-grid">${PAPERS.map((p) => `<button data-add-paper="${p.id}">${p.svg()}</button>`).join('')}</div>`;
     } else {
-      box.innerHTML = `
-        <div class="tiny muted">텍스트 · 소품</div><div class="st-grid">${STICKERS.map((s) => `<button data-add-st="${s.id}">${s.svg()}</button>`).join('')}</div>
-        <div class="tiny muted mt">감정</div><div class="st-grid small">${MOODS.map((m) => `<button data-add-st="mood:${m.id}" title="${m.label}">${moodSvg(m.id)}</button>`).join('')}</div>
-        <div class="tiny muted mt">날씨</div><div class="st-grid small">${WEATHERS.map((w) => `<button data-add-st="weather:${w.id}" title="${w.label}">${weatherSvg(w.id)}</button>`).join('')}</div>`;
+      const tabs = ST_TABS();
+      const cur = tabs.find((t) => t[0] === stTab) || tabs[0];
+      let grid;
+      if (cur[0] === '감정') grid = `<div class="st-grid small">${MOODS.map((m) => `<button data-add-st="mood:${m.id}" title="${m.label}">${moodSvg(m.id)}</button>`).join('')}</div>`;
+      else if (cur[0] === '날씨') grid = `<div class="st-grid small">${WEATHERS.map((w) => `<button data-add-st="weather:${w.id}" title="${w.label}">${weatherSvg(w.id)}</button>`).join('')}</div>`;
+      else grid = `<div class="st-grid">${cur[1].map((s) => `<button data-add-st="${s.id}">${s.svg()}</button>`).join('')}</div>`;
+      box.innerHTML = `<div class="chips scroll">${tabs.map(([n]) => `<button class="chip ${n === cur[0] ? 'on' : ''}" data-sttab="${n}">${n}</button>`).join('')}</div>${grid}`;
     }
   }
 
@@ -427,6 +459,9 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     if (pn) { panel = panel === pn.dataset.panel ? '' : pn.dataset.panel; renderPanel(); return; }
     const st = e.target.closest('[data-add-st]');
     if (st) { const c = visibleCenter(); addItem({ k: 'sticker', ref: st.dataset.addSt, x: c.x, y: c.y, w: st.dataset.addSt.includes(':') ? 0.16 : stickerDefaultW(st.dataset.addSt), r: Math.round(Math.random() * 16 - 8) }); return; }
+    const stt = e.target.closest('[data-sttab]'); if (stt) { stTab = stt.dataset.sttab; renderPanel(); return; }
+    const pa = e.target.closest('[data-add-paper]');
+    if (pa) { const c = visibleCenter(); addItem({ k: 'paper', ref: pa.dataset.addPaper, x: c.x, y: c.y, w: paperDefaultW(pa.dataset.addPaper), r: Math.round(Math.random() * 6 - 3) }); return; }
     const tp = e.target.closest('[data-add-tape]');
     if (tp) { const c = visibleCenter(); addItem({ k: 'tape', ref: tp.dataset.addTape, x: c.x, y: c.y, w: 0.34, r: Math.round(Math.random() * 20 - 10) }); return; }
     const c = e.target.closest('[data-color]');
@@ -434,7 +469,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     const pp = e.target.closest('[data-paper]');
     if (pp) {
       page.paper = pp.dataset.paper;
-      PAPERS.forEach(([k]) => pad.classList.remove('paper-' + k)); pad.classList.add('paper-' + page.paper);
+      PAPER_STYLES.forEach(([k]) => pad.classList.remove('paper-' + k)); pad.classList.add('paper-' + page.paper);
       host.querySelectorAll('[data-paper]').forEach((b) => b.classList.toggle('on', b === pp));
       changed(); return;
     }
@@ -479,6 +514,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     const c = visibleCenter();
     addItem({ k: 'photo', src, frame: 'polaroid', x: c.x, y: c.y, w: 0.42, r: Math.round(Math.random() * 10 - 5) });
   });
+  return { addItem: (it) => { const c = visibleCenter(); addItem({ x: c.x, y: c.y, r: 0, ...it }); pad.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
 }
 
 /** 예전 버전(그림 PNG + 이모지 스티커) → 새 페이지 구조 */

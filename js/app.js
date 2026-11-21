@@ -20,32 +20,38 @@ import bucket from './views/bucket.js';
 import music from './views/music.js';
 import money from './views/money.js';
 import wish from './views/wish.js';
+import calendar from './views/calendar.js';
+import calc from './views/calc.js';
 
-// [key, icon, label, view, mode]
+// [key, icon, label, view, modes] — 데일리 모드는 모든 메뉴를 보여줘요
+const S = ['study', 'daily'], L = ['life', 'daily'], ALL = ['study', 'life', 'daily'];
 const ROUTES = [
-  ['home', 'home', '홈', home, 'both'],
-  ['memo', 'memo', '메모', memo, 'study'],
-  ['timer', 'timer', '타이머', timer, 'study'],
-  ['todo', 'check', '할 일', todo, 'study'],
-  ['dday', 'calendar', '디데이', dday, 'study'],
-  ['records', 'book', '독서·공부', records, 'study'],
-  ['diary', 'diary', '다이어리', diary, 'life'],
-  ['bucket', 'flag', '버킷리스트', bucket, 'life'],
-  ['music', 'music', '음악', music, 'life'],
-  ['money', 'wallet', '가계부', money, 'life'],
-  ['wish', 'gift', '위시리스트', wish, 'life'],
-  ['health', 'activity', '건강', health, 'life'],
-  ['share', 'users', '함께', share, 'life'],
-  ['settings', 'settings', '설정', settings, 'both'],
+  ['home', 'home', '홈', home, ALL],
+  ['calendar', 'grid', '캘린더', calendar, ALL],
+  ['memo', 'memo', '메모', memo, S],
+  ['timer', 'timer', '타이머', timer, S],
+  ['todo', 'check', '할 일', todo, ALL],
+  ['dday', 'calendar', '디데이', dday, S],
+  ['records', 'book', '독서·공부', records, S],
+  ['diary', 'diary', '다이어리', diary, L],
+  ['bucket', 'flag', '버킷리스트', bucket, L],
+  ['music', 'music', '음악', music, L],
+  ['money', 'wallet', '가계부', money, L],
+  ['wish', 'gift', '위시리스트', wish, L],
+  ['health', 'activity', '건강', health, L],
+  ['share', 'users', '함께', share, L],
+  ['calc', 'calc', '계산기', calc, ALL],
+  ['settings', 'settings', '설정', settings, ALL],
 ];
-export const MODES = { study: '공부', life: '라이프' };
+export const MODES = { study: '공부', life: '라이프', daily: '데일리' };
+const TITLES = { study: 'STUDY', life: 'LIFE', daily: 'DAILY' };
 
 let current = null;
 let currentKey = '';
 
 function renderNav() {
   const mode = state.profile.mode;
-  const items = ROUTES.filter((r) => r[4] === 'both' || r[4] === mode);
+  const items = ROUTES.filter((r) => r[4].includes(mode));
   document.getElementById('nav').innerHTML = `
     <div class="nav-brand">ARCHIVE</div>
     <div class="mode-switch" role="tablist">${Object.entries(MODES).map(([k, l]) => `<button data-mode="${k}" class="${k === mode ? 'on' : ''}" role="tab">${l}</button>`).join('')}</div>
@@ -64,11 +70,11 @@ function route() {
   const key = (location.hash.replace(/^#\/?/, '').split('?')[0]) || 'home';
   const r = ROUTES.find((x) => x[0] === key) || ROUTES[0];
   // 다른 모드의 메뉴로 들어오면 모드를 자동 전환
-  if (r[4] !== 'both' && r[4] !== state.profile.mode) { state.profile.mode = r[4]; save(); }
+  if (!r[4].includes(state.profile.mode)) { state.profile.mode = r[4][0]; save(); }
   if (current && current.destroy) current.destroy();
   currentKey = r[0];
   current = r[3];
-  document.getElementById('title').textContent = r[0] === 'home' ? (state.profile.mode === 'study' ? 'STUDY' : 'LIFE') : r[2];
+  document.getElementById('title').textContent = r[0] === 'home' ? TITLES[state.profile.mode] || 'ARCHIVE' : r[2];
   document.title = `ARCHIVE · ${r[2]}`;
   renderNav();
   const fresh = document.createElement('main');

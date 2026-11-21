@@ -1,6 +1,6 @@
 import { state, save } from '../store.js';
 import { icon } from '../icons.js';
-import { esc, today, fmtDate, addDays, uid, ddayLabel } from '../util.js';
+import { esc, today, fmtDate, addDays, uid, ddayLabel, takeQuery, isYmd } from '../util.js';
 import { seg, modal, confirmBox, toast } from '../ui.js';
 
 let tab = 'todo';
@@ -104,7 +104,9 @@ function renderGoals() {
 
 export default {
   render(el) {
-    if (location.hash.includes('?goals')) { tab = 'goals'; history.replaceState(null, '', '#/todo'); }
+    const hq = location.hash.split('?')[1] || '';
+    if (hq === 'goals') { tab = 'goals'; history.replaceState(null, '', '#/todo'); }
+    else { const q = takeQuery('todo'); if (isYmd(q.date)) { date = q.date; tab = 'todo'; } }
     el.innerHTML = seg([['todo', '할 일'], ['goals', '목표']], tab) + (tab === 'todo' ? renderTodo() : renderGoals());
     const re = () => this.render(el);
     const find = (id) => state.todos.find((t) => t.id === id);

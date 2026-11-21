@@ -3,12 +3,12 @@ import { state, save } from '../store.js';
 import { esc, uid } from '../util.js';
 import { modal, confirmBox, toast } from '../ui.js';
 import { icon } from '../icons.js';
-import { HAND_FONTS, handFont } from '../theme.js';
+import { handFont, fontPicker } from '../theme.js';
 
 /** 메모별 글씨체 (없으면 설정의 기본 메모 글씨체) */
 const fontStyle = (m, base) => { const f = handFont(m.font || state.profile.memoFont); return `font-family:${f.css};font-size:calc(${base} * ${f.scale})`; };
 
-const COLORS = ['yellow', 'pink', 'mint', 'blue', 'purple', 'orange'];
+export const COLORS = ['yellow', 'lemon', 'cream', 'peach', 'orange', 'coral', 'pink', 'blush', 'lilac', 'purple', 'lavender', 'sky', 'blue', 'mint', 'sage', 'teal', 'gray', 'white', 'kraft', 'navy'];
 let deckFilter = '전체';
 
 const decks = () => [...new Set(state.memos.map((m) => m.deck || '기본'))].sort();
@@ -25,12 +25,12 @@ function editMemo(m, after) {
         <datalist id="deck-list">${decks().map((d) => `<option value="${esc(d)}">`).join('')}</datalist></label>
       <label class="field"><span>앞면 (메모 / 문제)</span><textarea name="front" required placeholder="자유롭게 적어요">${esc(m.front)}</textarea></label>
       <label class="field"><span>뒷면 (정답 · 선택) — 적으면 암기 카드로 쓸 수 있어요</span><textarea name="back" placeholder="예: 뜻, 정답, 해설">${esc(m.back)}</textarea></label>
-      <label class="field"><span>글씨체</span><div class="font-pick">${HAND_FONTS.map((f) => `<button type="button" data-font="${f.id}" class="${f.id === font ? 'on' : ''}" style="font-family:${f.css}">${f.name}</button>`).join('')}</div></label>
+      <div class="field"><span>글씨체</span>${fontPicker('font', font)}</div>
       <div class="color-pick">${COLORS.map((c) => `<button type="button" class="c-${c} ${c === color ? 'on' : ''}" data-color="${c}" aria-label="${c}"></button>`).join('')}</div>
       <div class="actions"><button type="button" class="btn" data-close>취소</button><button class="btn primary">저장</button></div>
     </form>`, {
     onMount(box, close) {
-      box.querySelector('.font-pick').onclick = (e) => {
+      box.querySelector('.font-groups').onclick = (e) => {
         const b = e.target.closest('[data-font]'); if (!b) return;
         font = b.dataset.font;
         box.querySelectorAll('[data-font]').forEach((x) => x.classList.toggle('on', x === b));

@@ -1,6 +1,6 @@
 // 가계부 — 수입/지출, 카테고리, 월 예산, 월별 요약
 import { state, save } from '../store.js';
-import { esc, today, uid, fmtDate, ymd } from '../util.js';
+import { esc, today, uid, fmtDate, ymd, takeQuery } from '../util.js';
 import { modal, confirmBox, toast } from '../ui.js';
 import { icon } from '../icons.js';
 import { barChart } from '../charts.js';
@@ -13,9 +13,9 @@ let month = today().slice(0, 7);
 const won = (n) => `${Math.round(n).toLocaleString('ko-KR')}원`;
 const shortWon = (n) => (n >= 10000 ? `${Math.round(n / 1000) / 10}만` : `${Math.round(n / 1000)}천`);
 
-function form(x, after, type = 'out') {
+function form(x, after, type = 'out', preset = '') {
   const isNew = !x;
-  x = x || { id: uid(), date: month === today().slice(0, 7) ? today() : month + '-01', type, amount: '', category: type === 'out' ? OUT[0] : IN[0], memo: '' };
+  x = x || { id: uid(), date: month === today().slice(0, 7) ? today() : month + '-01', type, amount: preset, category: type === 'out' ? OUT[0] : IN[0], memo: '' };
   const cats = (t) => (t === 'out' ? OUT : IN).map((c) => `<option ${c === x.category ? 'selected' : ''}>${c}</option>`).join('');
   modal(`<h2>${isNew ? '내역 추가' : '내역 수정'}<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <form class="form">
@@ -97,6 +97,8 @@ export default {
       </div>`;
 
     const re = () => this.render(el);
+    const q = takeQuery('money');
+    if (Number(q.amount) > 0) setTimeout(() => form(null, re, 'out', Math.round(Number(q.amount))), 50);
     el.onclick = (e) => {
       const nav = e.target.closest('[data-nav]');
       if (nav) { const n = Number(nav.dataset.nav); month = n === 0 ? today().slice(0, 7) : ymd(new Date(y, m - 1 + n, 1)).slice(0, 7); return re(); }

@@ -145,14 +145,19 @@ export const STICKERS = [
   { id: 'arrow', w: 0.2, svg: () => K('0 0 140 80', `<path d="M10 54 C40 18 80 16 118 40" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M100 26 L122 42 L98 54" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`) },
   { id: 'pencil', w: 0.24, svg: () => K('0 0 160 50', `<path d="M10 25 L30 12 H136 V38 H30Z" fill="#f8cf4a" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M10 25 L22 17 V33Z" fill="${INK}"/><rect x="136" y="12" width="16" height="26" rx="3" fill="#f2a3b6" stroke="${INK}" stroke-width="3"/><path d="M30 25 H130" stroke="#e2b230" stroke-width="2"/>`) },
 ];
+import { STICKER_GROUPS, PAPERS, TAPES2 } from './art2.js';
+export { STICKER_GROUPS, PAPERS };
+const ALL_STICKERS = () => [...STICKERS, ...STICKER_GROUPS.flatMap((g) => g.items)];
 export const stickerSvg = (id) => {
-  const s = STICKERS.find((x) => x.id === id);
+  const s = ALL_STICKERS().find((x) => x.id === id);
   if (s) return s.svg();
   if (id.startsWith('mood:')) return moodSvg(id.slice(5));
   if (id.startsWith('weather:')) return weatherSvg(id.slice(8));
   return '';
 };
-export const stickerDefaultW = (id) => (STICKERS.find((x) => x.id === id) || { w: 0.16 }).w;
+export const stickerDefaultW = (id) => (ALL_STICKERS().find((x) => x.id === id) || { w: 0.16 }).w;
+export const paperSvg = (id) => (PAPERS.find((p) => p.id === id) || PAPERS[0]).svg();
+export const paperDefaultW = (id) => (PAPERS.find((p) => p.id === id) || { w: 0.4 }).w;
 
 // ---------- 마스킹테이프 ----------
 const TORN = 'M6 0 L234 0 L240 5 L235 11 L240 17 L235 22 L240 28 L235 33 L240 39 L234 44 L6 44 L0 39 L5 33 L0 28 L5 22 L0 17 L5 11 L0 5Z';
@@ -169,4 +174,5 @@ export const TAPES = [
   { id: 'vintage', label: '빈티지', svg: () => K('0 0 240 44', `<path d="${TORN}" fill="#cfcac0" opacity=".9"/><text x="120" y="24" text-anchor="middle" dominant-baseline="middle" font-family="Georgia, 'Nanum Myeongjo', serif" font-size="12" letter-spacing="3" fill="#6b665e">ARCHIVE · ARCHIVE</text>`) },
   { id: 'clear', label: '반투명', svg: () => K('0 0 240 44', `<path d="${TORN}" fill="#ffffff" opacity=".55" stroke="#ddd" stroke-width="1"/>`) },
 ];
-export const tapeSvg = (id) => (TAPES.find((t) => t.id === id) || TAPES[0]).svg();
+export const ALL_TAPES = () => [...TAPES, ...TAPES2];
+export const tapeSvg = (id) => (ALL_TAPES().find((t) => t.id === id) || TAPES[0]).svg();

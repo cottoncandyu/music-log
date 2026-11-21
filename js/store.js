@@ -12,7 +12,7 @@ const defaults = () => ({
   version: 2,
   profile: {
     name: '', goalMinutes: 240, goalWeight: null, penOnly: false, lastSubject: '',
-    mode: 'study',            // 'study' | 'life'
+    mode: 'study',            // 'study' | 'life' | 'daily'(둘 다)
     theme: 'vintage',         // 'vintage' | 'mono' | 'pastel' | 'clean'
     dark: 'auto',             // 'auto' | 'light' | 'dark'
     accent: '',               // 빈 값이면 테마 기본색
@@ -20,7 +20,11 @@ const defaults = () => ({
     bgImage: '', bgDim: 30,
     memoFont: 'gaegu', inkCorrect: true, inkStrength: 3,
     budget: 0,
-    widgets: null,            // {study:[{id,on}], life:[{id,on}]} — null이면 기본
+    widgets: null,            // {study|life|daily: [{id,on}]} — null이면 기본
+    widgetCfg: {
+      clock: { style: 'digital', h24: true, seconds: false, date: true, font: 'gowun-batang', color: '' },
+      photo: { src: '', caption: '', frame: 'polaroid' },
+    },
   },
   subjects: [
     { name: '국어', color: '#e57373' }, { name: '영어', color: '#5c9ce6' }, { name: '수학', color: '#7cbf6b' },
@@ -45,6 +49,8 @@ const defaults = () => ({
   money: [],        // {id, date, type:'in'|'out', amount, category, memo}
   wishes: [],       // {id, title, price, link, priority, photo, memo, bought, boughtDate, created}
   quotes: [],       // 직접 추가한 문장 {id, text, by}
+  events: [],       // 캘린더 일정 {id, date, time, title, color, memo}
+  playlists: [],    // {id, name, desc, color, cover, songs:[{id, title, artist, link}], created}
 });
 
 /** 이전 버전 데이터 변환 */
@@ -89,6 +95,8 @@ async function connect() {
 function merge(base, saved) {
   const out = { ...base, ...saved };
   for (const k of ['profile', 'pomoCfg', 'run']) out[k] = { ...base[k], ...(saved[k] || {}) };
+  const wc = (saved.profile || {}).widgetCfg || {};
+  out.profile.widgetCfg = { clock: { ...base.profile.widgetCfg.clock, ...(wc.clock || {}) }, photo: { ...base.profile.widgetCfg.photo, ...(wc.photo || {}) } };
   return out;
 }
 

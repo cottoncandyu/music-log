@@ -114,3 +114,12 @@ export function wrapText(ctx, text, maxWidth) {
   }
   return lines;
 }
+
+/** #/route?key=value 쿼리를 읽고 주소에서 지움 */
+export function takeQuery(route) {
+  const q = location.hash.split('?')[1];
+  if (!q) return {};
+  history.replaceState(null, '', '#/' + route);
+  return Object.fromEntries(new URLSearchParams(q));
+}
+export const isYmd = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '');

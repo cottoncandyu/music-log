@@ -1,6 +1,7 @@
 import { state, save, diaryOf } from '../store.js';
-import { esc, today, fmtDate, addDays, ymd, debounce, uid } from '../util.js';
+import { esc, today, fmtDate, addDays, ymd, debounce, uid, takeQuery, isYmd } from '../util.js';
 import { createDrawPad, migratePage } from '../drawpad.js';
+import { secOnDate, pomoCountOn } from '../timers.js';
 import { toast, confirmBox, modal } from '../ui.js';
 import { icon } from '../icons.js';
 import { MOODS, WEATHERS, moodSvg, weatherSvg, moodId, weatherId, moodLabel, weatherLabel } from '../art.js';
@@ -8,6 +9,41 @@ import { MOODS, WEATHERS, moodSvg, weatherSvg, moodId, weatherId, moodLabel, wea
 let date = today();
 let view = 'write';
 let month = today().slice(0, 7);
+let pad = null;
+const REC_KEYS = [['study', '공부'], ['pomo', '뽀모도로'], ['todo', '할 일'], ['workout', '운동'], ['spend', '지출'], ['wake', '기상'], ['weight', '몸무게'], ['song', '노래'], ['mood', '기분'], ['weather', '날씨']];
+let recOn = { study: true, pomo: true, todo: true, workout: true, spend: true, wake: true, weight: false, song: true, mood: true, weather: true };
+
+/** 오늘의 기록: 다른 메뉴의 기록을 모아 한 장으로 */
+function recordRows(d) {
+  const di = state.diaries[d] || {};
+  const won = (n) => `${Math.round(n).toLocaleString('ko-KR')}원`;
+  const sec = secOnDate(d), h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  const todos = state.todos.filter((t) => t.date === d);
+  const wo = state.workouts.filter((x) => x.date === d).reduce((a, b) => a + Number(b.min || 0), 0);
+  const spend = state.money.filter((x) => x.date === d && x.type === 'out').reduce((a, b) => a + b.amount, 0);
+  const all = {
+    study: sec >= 60 ? [h ? `${h}h ${m}m` : `${m}m`] : null,
+    pomo: pomoCountOn(d) ? [`${pomoCountOn(d)}회`] : null,
+    todo: todos.length ? [`${todos.filter((t) => t.done).length}/${todos.length}`] : null,
+    workout: wo ? [`${wo}분`] : null,
+    spend: spend ? [won(spend)] : null,
+    wake: state.sleeps[d]?.wake ? [state.sleeps[d].wake] : null,
+    weight: state.weights[d] != null ? [`${state.weights[d]}kg`] : null,
+    song: di.song?.title ? [di.song.title.slice(0, 14)] : null,
+    mood: di.mood ? [moodLabel(di.mood)] : null,
+    weather: di.weather ? [weatherLabel(di.weather)] : null,
+  };
+  return REC_KEYS.filter(([k]) => all[k]).map(([k, l]) => ({ k, l, v: all[k][0] }));
+}
+function recordCard(d) {
+  const di = state.diaries[d] || {};
+  const rows = recordRows(d);
+  return `<div class="card"><h3>${icon('receipt', 18)} 오늘의 기록 <span class="right tiny muted">다른 메뉴 기록을 모아요</span></h3>
+    ${rows.length ? `<ul class="list rec-list">${rows.map((r) => `<li><input type="checkbox" data-rec="${r.k}" ${recOn[r.k] ? 'checked' : ''}><span class="txt">${r.l}</span><b class="num">${esc(r.v)}</b></li>`).join('')}</ul>`
+      : '<div class="small muted">아직 모을 기록이 없어요. 공부 타이머·할 일·가계부·건강 기록이 생기면 여기에 모여요.</div>'}
+    <input type="text" data-recnote value="${esc(di.recordNote || '')}" placeholder="오늘을 한 줄로 (영수증 아래에 들어가요)" maxlength="28" class="mt">
+    <button class="btn soft block mt" data-act="attach-record">${icon('sticker', 16)} 영수증으로 종이에 붙이기</button></div>`;
+}
 
 const songLinks = (q) => `<a class="btn sm" target="_blank" rel="noopener" href="https://music.youtube.com/search?q=${q}">YouTube Music</a><a class="btn sm" target="_blank" rel="noopener" href="https://www.melon.com/search/total/index.htm?q=${q}">멜론</a>`;
 const hasContent = (d) => d && (d.mood || d.weather || d.text || d.drawing || d.song?.title || d.photos?.length || d.page?.strokes?.length || d.page?.items?.length || d.grateful?.some(Boolean));
@@ -55,6 +91,7 @@ function writer() {
           <div class="row nowrap"><input type="text" data-f="song.title" value="${esc(d.song?.title)}" placeholder="노래 제목"><input type="text" data-f="song.artist" value="${esc(d.song?.artist)}" placeholder="가수"></div>
           <div class="row mt" data-songlinks ${q ? '' : 'hidden'}>${songLinks(q)}</div></div>
         <div class="card"><h3>${icon('heart', 18)} 감사 일기</h3><div class="form">${[0, 1, 2].map((i) => `<input type="text" data-g="${i}" value="${esc(d.grateful?.[i])}" placeholder="${i + 1}. 오늘 감사한 일">`).join('')}</div></div>
+        ${recordCard(date)}
         <div class="card"><h3>${icon('edit', 18)} 일기</h3><textarea class="diary-text" data-f="text" placeholder="오늘 하루는 어땠나요?">${esc(d.text)}</textarea></div>
         ${d.photos?.length ? `<div class="card"><h3>${icon('image', 18)} 사진첩</h3><div class="photos">${d.photos.map((p, i) => `<div class="ph"><img src="${p}" alt="" data-view="${i}"><button class="x" data-delphoto="${i}" aria-label="삭제">${icon('close', 14)}</button><button class="pin" data-pinphoto="${i}">종이에 붙이기</button></div>`).join('')}</div></div>` : ''}
       </div>
@@ -64,6 +101,8 @@ function writer() {
 
 export default {
   render(el) {
+    const q = takeQuery('diary');
+    if (isYmd(q.date)) { date = q.date; view = 'write'; }
     el.innerHTML = `<div class="seg"><button data-seg="write" class="${view === 'write' ? 'on' : ''}">쓰기</button><button data-seg="cal" class="${view === 'cal' ? 'on' : ''}">달력</button></div>` +
       (view === 'write' ? writer() : calendar());
     const re = () => this.render(el);
@@ -73,7 +112,7 @@ export default {
     if (view === 'write') {
       const d0 = diaryOf(date);
       const page = d0 ? migratePage(d0) : { paper: 'lined', strokes: [], items: [] };
-      createDrawPad(el.querySelector('[data-pad]'), {
+      pad = createDrawPad(el.querySelector('[data-pad]'), {
         page, legacy: d0?.drawing || '',
         onChange: (pg, extra) => {
           const d = get();
@@ -116,11 +155,22 @@ export default {
       if (dp) { if (await confirmBox('사진을 삭제할까요?', '삭제')) { get().photos.splice(Number(dp.dataset.delphoto), 1); save(); re(); } return; }
       const v = t.closest('[data-view]');
       if (v) { modal(`<img src="${get().photos[Number(v.dataset.view)]}" alt="" style="width:100%;border-radius:12px;display:block"><div class="actions"><button class="btn primary" data-close>닫기</button></div>`, { wide: true }); return; }
+      if (t.closest('[data-act=attach-record]')) {
+        const d = get();
+        const rows = recordRows(date).filter((r) => recOn[r.k]).map((r) => [r.l, r.v]);
+        if (!rows.length && !d.recordNote) return toast('붙일 기록이 없어요');
+        pad && pad.addItem({ k: 'record', w: 0.42, data: { date: fmtDate(date, true), rows, note: d.recordNote || '' } });
+        return toast('오늘의 기록을 붙였어요');
+      }
       if (t.closest('[data-act=delete]')) {
         if (await confirmBox(`${fmtDate(date)} 다이어리를 모두 지울까요?`, '삭제')) { delete state.diaries[date]; save(); re(); }
       }
     };
+    el.onchange = (e) => {
+      if (e.target.dataset.rec) recOn[e.target.dataset.rec] = e.target.checked;
+    };
     el.oninput = (e) => {
+      if (e.target.matches('[data-recnote]')) { get().recordNote = e.target.value; persist(); return; }
       const f = e.target.dataset.f, g = e.target.dataset.g;
       if (!f && g == null) return;
       const d = get();
