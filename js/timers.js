@@ -137,7 +137,7 @@ function advance(completed) {
   if (p.running) p.endsAt = Math.max(Date.now(), endedAt) + p.remain * 1000;
   save();
   window.dispatchEvent(new Event('datachange'));
-  if (completed) alertUser(next === 'focus' ? '휴식 끝! 다시 집중해볼까요? 💪' : `🍅 집중 완료! ${PHASE_LABEL[next]} 시간이에요`);
+  if (completed) alertUser(next === 'focus' ? '휴식 끝! 다시 집중해볼까요? ' : `집중 완료! ${PHASE_LABEL[next]} 시간이에요`);
 }
 
 /** 1초마다 호출 */

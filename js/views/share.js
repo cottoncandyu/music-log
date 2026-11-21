@@ -1,5 +1,6 @@
 // 오늘의 기록 카드 공유 + 친구 기록 모아보기 (서버 없이 공유 코드로 주고받기)
 import { state, save, mainDday } from '../store.js';
+import { moodLabel, weatherLabel } from '../art.js';
 import { esc, today, fmtDate, fmtDur, ddayLabel, uid, canvasToBlob, shareOrDownload, b64encode, b64decode, wrapText } from '../util.js';
 import { secOnDate, pomoCountOn, bySubject } from '../timers.js';
 import { toast, confirmBox } from '../ui.js';
@@ -28,15 +29,15 @@ function summary() {
 
 function lines(s) {
   const out = [];
-  if (s.dday) out.push(`📅 ${s.dday[0]} ${s.dday[1]}`);
-  if (s.study != null) out.push(`⏱ 공부 ${fmtDur(s.study)}${s.pomo ? ` · 🍅 ${s.pomo}` : ''}${s.subj?.length ? ` (${s.subj.map(([n, sec]) => `${n} ${fmtDur(sec)}`).join(', ')})` : ''}`);
-  if (s.todo) out.push(`✅ 할 일 ${s.todo[0]}/${s.todo[1]}`);
-  if (s.mood || s.weather) out.push(`${s.mood || ''}${s.weather ? ' ' + s.weather : ''} 오늘의 기분`);
-  if (s.song) out.push(`🎵 ${s.song}`);
-  if (s.grat?.length) out.push(`🙏 ${s.grat.join(' / ')}`);
-  if (s.wo && s.wo[0]) out.push(`🏃 운동 ${s.wo[0]}분${s.wo[1] ? ' · ' + s.wo[1] : ''}`);
-  if (s.wake) out.push(`☀️ 기상 ${s.wake}`);
-  if (s.kg != null) out.push(`⚖️ ${s.kg}kg`);
+  if (s.dday) out.push(`${s.dday[0]} ${s.dday[1]}`);
+  if (s.study != null) out.push(`공부 ${fmtDur(s.study)}${s.pomo ? ` · ${s.pomo}` : ''}${s.subj?.length ? ` (${s.subj.map(([n, sec]) => `${n} ${fmtDur(sec)}`).join(', ')})` : ''}`);
+  if (s.todo) out.push(`할 일 ${s.todo[0]}/${s.todo[1]}`);
+  if (s.mood || s.weather) out.push([s.mood && `기분 ${moodLabel(s.mood) || s.mood}`, s.weather && `날씨 ${weatherLabel(s.weather) || s.weather}`].filter(Boolean).join(' · '));
+  if (s.song) out.push(`${s.song}`);
+  if (s.grat?.length) out.push(`${s.grat.join(' / ')}`);
+  if (s.wo && s.wo[0]) out.push(`운동 ${s.wo[0]}분${s.wo[1] ? ' · ' + s.wo[1] : ''}`);
+  if (s.wake) out.push(`기상 ${s.wake}`);
+  if (s.kg != null) out.push(`${s.kg}kg`);
   return out;
 }
 
@@ -68,7 +69,7 @@ async function drawCard(s) {
   ctx.font = font(500, 40);
   for (const l of ls) { ctx.fillText(l, P, y); y += 70; }
   if (cm.length) { y += 20; ctx.fillStyle = '#c0623c'; ctx.font = font(500, 38); for (const l of cm) { ctx.fillText(l, P, y); y += 56; } }
-  ctx.fillStyle = '#b3a796'; ctx.font = font(600, 28); ctx.fillText('📚 공부책상', P, H - 60);
+  ctx.fillStyle = '#b3a796'; ctx.font = font(600, 28); ctx.fillText('ARCHIVE', P, H - 60);
   return c;
 }
 
@@ -78,7 +79,7 @@ export default {
     const friends = state.friends.slice().sort((a, b) => b.date.localeCompare(a.date) || (b.added || 0) - (a.added || 0));
     el.innerHTML = `
       <div class="grid two">
-        <div class="card"><h3>📤 오늘의 기록 나누기</h3>
+        <div class="card"><h3>오늘의 기록 나누기</h3>
           <div class="chips mb">${OPTS.map(([k, l]) => `<button class="chip ${on[k] ? 'on' : ''}" data-opt="${k}">${l}</button>`).join('')}</div>
           <input type="text" data-comment value="${esc(comment)}" placeholder="한마디 (예: 오늘도 완주!)" maxlength="80">
           <div class="card mt" style="background:var(--surface2);box-shadow:none" data-preview>
@@ -86,16 +87,16 @@ export default {
             <div class="small mt" style="white-space:pre-line">${esc(lines(s).join('\n')) || '<span class="muted">기록이 아직 없어요</span>'}</div>
             ${comment ? `<div class="small mt" style="color:var(--accent)">“${esc(comment)}”</div>` : ''}
           </div>
-          <div class="row mt"><button class="btn primary" data-act="img">🖼 이미지로 공유</button><button class="btn" data-act="text">💬 텍스트+코드 공유</button></div>
+          <div class="row mt"><button class="btn primary" data-act="img">이미지로 공유</button><button class="btn" data-act="text">텍스트+코드 공유</button></div>
           <p class="tiny muted mt">카톡·인스타·문자 등으로 보낼 수 있어요. 함께 쓰는 친구가 메시지를 통째로 아래에 붙여넣으면 피드에 추가돼요.</p>
         </div>
-        <div class="card"><h3>👥 친구들의 기록</h3>
+        <div class="card"><h3>친구들의 기록</h3>
           <form class="form" data-form="import"><textarea name="code" placeholder="친구가 보낸 메시지를 그대로 붙여넣기" style="min-height:70px"></textarea>
             <button class="btn">＋ 피드에 추가</button></form>
           <hr>
           ${friends.length ? friends.map((f) => `
             <div class="friend mb"><div class="av">${esc((f.name || '?').slice(0, 1))}</div>
-              <div class="body"><div class="row"><b>${esc(f.name)}</b><span class="tiny muted">${fmtDate(f.date)}</span><span class="spacer"></span><button class="icon-btn" data-delf="${f.id}">✕</button></div>
+              <div class="body"><div class="row"><b>${esc(f.name)}</b><span class="tiny muted">${fmtDate(f.date)}</span><span class="spacer"></span><button class="icon-btn" data-delf="${f.id}"></button></div>
               <div class="lines">${lines(f).map((l) => `<span>${esc(l)}</span>`).join('')}</div>
               ${f.c ? `<div class="small mt" style="color:var(--accent)">“${esc(f.c)}”</div>` : ''}</div></div>`).join('')
           : '<div class="empty">친구가 보낸 기록이 여기에 모여요</div>'}
@@ -118,7 +119,7 @@ export default {
       }
       if (a === 'text') {
         const sm = summary();
-        const text = `📚 ${sm.name}의 오늘 기록 (${fmtDate(sm.date)})\n${lines(sm).join('\n')}${sm.c ? `\n“${sm.c}”` : ''}\n\n${toCode(sm)}`;
+        const text = `${sm.name}의 오늘 기록 (${fmtDate(sm.date)})\n${lines(sm).join('\n')}${sm.c ? `\n“${sm.c}”` : ''}\n\n${toCode(sm)}`;
         try {
           if (navigator.share) await navigator.share({ text });
           else { await navigator.clipboard.writeText(text); toast('복사했어요! 메신저에 붙여넣으세요'); }

@@ -1,6 +1,8 @@
-import { state, load, onSaveError } from './store.js';
+import { state, save, load, onSaveError } from './store.js';
 import { fmtClock, fmtMS } from './util.js';
 import { toast } from './ui.js';
+import { icon } from './icons.js';
+import { applyTheme } from './theme.js';
 import * as T from './timers.js';
 import { openFocus } from './focus.js';
 
@@ -14,55 +16,70 @@ import records from './views/records.js';
 import health from './views/health.js';
 import share from './views/share.js';
 import settings from './views/settings.js';
+import bucket from './views/bucket.js';
+import music from './views/music.js';
+import money from './views/money.js';
+import wish from './views/wish.js';
 
+// [key, icon, label, view, mode]
 const ROUTES = [
-  ['home', '🏠', '홈', home],
-  ['memo', '📌', '메모', memo],
-  ['timer', '⏱️', '타이머', timer],
-  ['todo', '✅', '할 일', todo],
-  ['dday', '📅', '디데이', dday],
-  ['diary', '📔', '다이어리', diary],
-  ['records', '📚', '독서·공부', records],
-  ['health', '💪', '건강', health],
-  ['share', '🤝', '함께', share],
-  ['settings', '⚙️', '설정', settings],
+  ['home', 'home', '홈', home, 'both'],
+  ['memo', 'memo', '메모', memo, 'study'],
+  ['timer', 'timer', '타이머', timer, 'study'],
+  ['todo', 'check', '할 일', todo, 'study'],
+  ['dday', 'calendar', '디데이', dday, 'study'],
+  ['records', 'book', '독서·공부', records, 'study'],
+  ['diary', 'diary', '다이어리', diary, 'life'],
+  ['bucket', 'flag', '버킷리스트', bucket, 'life'],
+  ['music', 'music', '음악', music, 'life'],
+  ['money', 'wallet', '가계부', money, 'life'],
+  ['wish', 'gift', '위시리스트', wish, 'life'],
+  ['health', 'activity', '건강', health, 'life'],
+  ['share', 'users', '함께', share, 'life'],
+  ['settings', 'settings', '설정', settings, 'both'],
 ];
+export const MODES = { study: '공부', life: '라이프' };
 
 let current = null;
 let currentKey = '';
 
-function applyTheme() {
-  const t = state.profile.theme;
-  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-  else delete document.documentElement.dataset.theme;
-}
-
 function renderNav() {
-  document.getElementById('nav').innerHTML = `<div class="nav-brand">📚 공부책상</div>` +
-    ROUTES.map(([k, ico, label]) => `<a class="nav-item ${k === currentKey ? 'on' : ''}" href="#/${k}"><span class="ico">${ico}</span><span>${label}</span></a>`).join('');
+  const mode = state.profile.mode;
+  const items = ROUTES.filter((r) => r[4] === 'both' || r[4] === mode);
+  document.getElementById('nav').innerHTML = `
+    <div class="nav-brand">ARCHIVE</div>
+    <div class="mode-switch" role="tablist">${Object.entries(MODES).map(([k, l]) => `<button data-mode="${k}" class="${k === mode ? 'on' : ''}" role="tab">${l}</button>`).join('')}</div>
+    ${items.map(([k, ic, label]) => `<a class="nav-item ${k === currentKey ? 'on' : ''}" href="#/${k}">${icon(ic, 22)}<span>${label}</span></a>`).join('')}`;
   const on = document.querySelector('.nav-item.on');
   if (on && matchMedia('(max-width: 899px)').matches) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+}
+
+export function setMode(mode) {
+  if (state.profile.mode === mode) return;
+  state.profile.mode = mode; save();
+  if (location.hash === '#/home' || location.hash === '' || location.hash === '#/') route(); else location.hash = '#/home';
 }
 
 function route() {
   const key = (location.hash.replace(/^#\/?/, '').split('?')[0]) || 'home';
   const r = ROUTES.find((x) => x[0] === key) || ROUTES[0];
+  // 다른 모드의 메뉴로 들어오면 모드를 자동 전환
+  if (r[4] !== 'both' && r[4] !== state.profile.mode) { state.profile.mode = r[4]; save(); }
   if (current && current.destroy) current.destroy();
   currentKey = r[0];
   current = r[3];
-  document.getElementById('title').textContent = r[0] === 'home' ? '공부책상' : `${r[1]} ${r[2]}`;
+  document.getElementById('title').textContent = r[0] === 'home' ? (state.profile.mode === 'study' ? 'STUDY' : 'LIFE') : r[2];
+  document.title = `ARCHIVE · ${r[2]}`;
   renderNav();
-  const main = document.getElementById('main');
   const fresh = document.createElement('main');
   fresh.id = 'main';
-  main.replaceWith(fresh);
+  document.getElementById('main').replaceWith(fresh);
   current.render(fresh);
   window.scrollTo(0, 0);
 }
 
 export function rerender() {
-  const main = document.getElementById('main');
-  if (current) current.render(main);
+  if (current) current.render(document.getElementById('main'));
 }
 
 function updateRunningPill() {
@@ -70,11 +87,11 @@ function updateRunningPill() {
   const s = state.run.study, p = state.run.pomo;
   if (s) {
     pill.hidden = false;
-    pill.textContent = `${s.running ? '●' : '❚❚'} ${s.subject} ${fmtClock(T.studyElapsed())}`;
+    pill.innerHTML = `${s.running ? '<i class="rec"></i>' : icon('pause', 14)} ${s.subject} ${fmtClock(T.studyElapsed())}`;
     pill.onclick = () => openFocus('study');
   } else if (p && p.running) {
     pill.hidden = false;
-    pill.textContent = `🍅 ${T.PHASE_LABEL[p.phase]} ${fmtMS(T.pomoRemaining())}`;
+    pill.innerHTML = `${T.PHASE_LABEL[p.phase]} ${fmtMS(T.pomoRemaining())}`;
     pill.onclick = () => openFocus('pomo');
   } else pill.hidden = true;
 }
@@ -87,12 +104,16 @@ async function start() {
     if (Date.now() - lastWarn < 60000) return; // 1분에 한 번만
     lastWarn = Date.now();
     const quota = [e, e2].some((x) => x && x.name === 'QuotaExceededError');
-    toast(quota ? '⚠️ 저장 공간이 부족해요. 설정 → 백업 후 사진을 정리해주세요.' : `⚠️ 저장에 실패했어요 (${e && e.name}). 앱을 완전히 닫았다 다시 열어주세요.`, 5000);
+    toast(quota ? '저장 공간이 부족해요. 설정 → 백업 후 사진을 정리해주세요.' : `저장에 실패했어요 (${e && e.name}). 앱을 완전히 닫았다 다시 열어주세요.`, 5000);
   });
   addEventListener('hashchange', route);
-  addEventListener('themechange', applyTheme);
+  addEventListener('themechange', () => { applyTheme(); renderNav(); });
   addEventListener('datachange', () => { if (current && current.onData) current.onData(); });
   document.addEventListener('pointerdown', T.unlockAudio, { once: true });
+  document.getElementById('nav').addEventListener('click', (e) => {
+    const m = e.target.closest('[data-mode]');
+    if (m) setMode(m.dataset.mode);
+  });
   route();
   let lastDay = new Date().toDateString();
   setInterval(() => {

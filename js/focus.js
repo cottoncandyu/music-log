@@ -1,5 +1,6 @@
 // 집중 화면: 화면을 켜둔 채 공부할 수 있는 전체화면 시계 (화면 꺼짐 방지)
 import { state } from './store.js';
+import { icon } from './icons.js';
 import { fmtClock, fmtMS, fmtDur, pad, today } from './util.js';
 import * as T from './timers.js';
 
@@ -19,10 +20,10 @@ export function openFocus(mode = 'study') {
     <div class="label" data-label></div>
     <div class="progress" data-prog hidden><i style="width:0"></i></div>
     <div class="ctrl">
-      <button class="btn lg" data-act="toggle">⏯ 시작/일시정지</button>
-      ${mode === 'study' ? '<button class="btn lg" data-act="stop">⏹ 종료·저장</button>' : '<button class="btn lg" data-act="skip">⏭ 건너뛰기</button>'}
-      <button class="btn lg" data-act="dim">🌙 어둡게</button>
-      <button class="btn lg" data-act="close">✕ 닫기</button>
+      <button class="btn lg" data-act="toggle">시작/일시정지</button>
+      ${mode === 'study' ? `<button class="btn lg" data-act="stop">${icon('stop', 18)} 종료·저장</button>` : '<button class="btn lg" data-act="skip">건너뛰기</button>'}
+      <button class="btn lg" data-act="dim">어둡게</button>
+      <button class="btn lg" data-act="close">닫기</button>
     </div>
     <div class="tiny" style="opacity:.4;margin-top:14px">화면을 탭하면 버튼이 숨겨져요</div>`;
   document.body.appendChild(el);
@@ -42,7 +43,7 @@ export function openFocus(mode = 'study') {
       const p = T.pomo();
       const rem = T.pomoRemaining();
       $('[data-clock]').textContent = fmtMS(rem);
-      $('[data-label]').textContent = `${T.PHASE_LABEL[p.phase]} · ${p.subject} · 🍅 ${p.count}${p.running ? '' : ' · 일시정지'}`;
+      $('[data-label]').textContent = `${T.PHASE_LABEL[p.phase]} · ${p.subject} · ${p.count}회 완료${p.running ? '' : ' · 일시정지'}`;
       const prog = $('[data-prog]'); prog.hidden = false;
       prog.firstElementChild.style.width = `${(1 - rem / T.pomoTotal()) * 100}%`;
     }

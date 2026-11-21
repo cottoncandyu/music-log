@@ -1,9 +1,9 @@
 import { esc } from './util.js';
 
 /** 막대 차트: items [{label, value, color, hi}] */
-export function barChart(items, { height = 170, fmt = (v) => v, color = 'var(--accent)', showZero = false } = {}) {
+export function barChart(items, { height = 170, fmt = (v) => v, color = 'var(--accent)', showZero = false, slot: slotW = 48, values = true } = {}) {
   const n = items.length || 1;
-  const slot = 48, W = n * slot, top = 20, bottom = 22, H = height;
+  const slot = slotW, W = n * slot, top = 20, bottom = 22, H = height;
   const max = Math.max(1, ...items.map((i) => i.value));
   const ch = H - top - bottom;
   const bars = items.map((it, i) => {
@@ -11,7 +11,7 @@ export function barChart(items, { height = 170, fmt = (v) => v, color = 'var(--a
     const x = i * slot + slot * 0.2, w = slot * 0.6, y = top + ch - h;
     const c = it.color || color;
     return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${c}" opacity="${it.hi === false ? 0.45 : 1}"/>
-      ${it.value > 0 || showZero ? `<text class="val" x="${x + w / 2}" y="${y - 5}" text-anchor="middle">${esc(fmt(it.value))}</text>` : ''}
+      ${values && (it.value > 0 || showZero) ? `<text class="val" x="${x + w / 2}" y="${y - 5}" text-anchor="middle">${esc(fmt(it.value))}</text>` : ''}
       <text x="${x + w / 2}" y="${H - 6}" text-anchor="middle" ${it.hi ? 'style="fill:var(--text);font-weight:700"' : ''}>${esc(it.label)}</text>`;
   }).join('');
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img">

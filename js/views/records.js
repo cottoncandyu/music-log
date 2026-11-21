@@ -1,5 +1,6 @@
 // 독서 기록 + 공부 노트
 import { state, save, subjectColor } from '../store.js';
+import { icon } from '../icons.js';
 import { esc, today, fmtDate, uid, fmtDur, resizeImage } from '../util.js';
 import { seg, modal, confirmBox, toast } from '../ui.js';
 import { secOnDate } from '../timers.js';
@@ -9,14 +10,14 @@ let filter = 'all';
 let subjFilter = '';
 let search = '';
 
-const STATUS = { reading: '📖 읽는 중', done: '✅ 완독', want: '🔖 읽고 싶은' };
+const STATUS = { reading: '읽는 중', done: '완독', want: '읽고 싶은' };
 const BOOK_COLORS = ['#c0705a', '#5a8ac0', '#6aa36f', '#8a6fd6', '#d09a3e', '#4f9a9a', '#b85c8a', '#5f6b7a'];
 const stars = (n) => '★'.repeat(n || 0) + '☆'.repeat(5 - (n || 0));
 
 function bookForm(b, after) {
   const isNew = !b;
   b = b || { id: uid(), title: '', author: '', total: 0, current: 0, status: 'reading', rating: 0, review: '', quotes: [], log: [], color: BOOK_COLORS[Math.floor(Math.random() * BOOK_COLORS.length)], cover: '', start: today(), end: '' };
-  modal(`<h2>${isNew ? '📚 책 추가' : '✏️ 책 정보 수정'}<button class="icon-btn" data-close>✕</button></h2>
+  modal(`<h2>${isNew ? '책 추가' : '책 정보 수정'}<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <form class="form">
       <label class="field"><span>제목</span><input type="text" name="title" value="${esc(b.title)}" required></label>
       <label class="field"><span>저자</span><input type="text" name="author" value="${esc(b.author)}"></label>
@@ -50,7 +51,7 @@ function bookForm(b, after) {
 function bookDetail(b, after) {
   const draw = (box) => {
     const r = b.total ? Math.min(1, b.current / b.total) : 0;
-    box.innerHTML = `<h2>${esc(b.title)}<button class="icon-btn" data-close>✕</button></h2>
+    box.innerHTML = `<h2>${esc(b.title)}<button class="icon-btn" data-close>${icon('close')}</button></h2>
       <div class="muted small mb">${esc(b.author)} · ${STATUS[b.status]}${b.start ? ` · ${b.start} 시작` : ''}${b.end ? ` · ${b.end} 완독` : ''}</div>
       <div class="card">
         <div class="row"><b>진행</b><span class="spacer"></span><span class="num">${b.current} / ${b.total || '?'}쪽 (${Math.round(r * 100)}%)</span></div>
@@ -60,8 +61,8 @@ function bookDetail(b, after) {
       </div>
       <div class="card mt"><b>별점</b><div class="star-pick">${[1, 2, 3, 4, 5].map((n) => `<button data-star="${n}" class="${n <= b.rating ? 'on' : ''}">★</button>`).join('')}</div>
         <label class="field mt"><span>감상 / 리뷰</span><textarea data-review placeholder="느낀 점을 남겨보세요">${esc(b.review)}</textarea></label></div>
-      <div class="card mt"><b>✒️ 밑줄 긋기 (인상 깊은 문장)</b>
-        ${(b.quotes || []).map((q, i) => `<div class="row nowrap"><div class="quote" style="flex:1">${esc(q.text)}${q.page ? ` <span class="muted tiny">p.${q.page}</span>` : ''}</div><button class="icon-btn" data-delq="${i}">🗑</button></div>`).join('')}
+      <div class="card mt"><b>밑줄 긋기 (인상 깊은 문장)</b>
+        ${(b.quotes || []).map((q, i) => `<div class="row nowrap"><div class="quote" style="flex:1">${esc(q.text)}${q.page ? ` <span class="muted tiny">p.${q.page}</span>` : ''}</div><button class="icon-btn" data-delq="${i}">${icon('trash', 16)}</button></div>`).join('')}
         <form class="form mt" data-form="quote"><textarea name="text" placeholder="문장을 적어두세요" style="min-height:60px"></textarea>
           <div class="row nowrap"><input type="number" name="page" placeholder="쪽" style="max-width:100px"><button class="btn">추가</button></div></form></div>
       <div class="actions"><button class="btn" data-edit>정보 수정</button><button class="btn primary" data-close>닫기</button></div>`;
@@ -81,7 +82,7 @@ function bookDetail(b, after) {
           const last = b.log[b.log.length - 1];
           if (last && last.date === today()) last.page = b.current; else b.log.push({ date: today(), page: b.current });
           if (b.status === 'want') b.status = 'reading';
-          if (b.total && b.current >= b.total) { b.status = 'done'; b.end = b.end || today(); toast('완독 축하해요! 🎉'); }
+          if (b.total && b.current >= b.total) { b.status = 'done'; b.end = b.end || today(); toast('완독 축하해요! '); }
         }
         if (f.dataset.form === 'quote') {
           const text = f.text.value.trim(); if (!text) return;
@@ -137,7 +138,7 @@ function renderBooks() {
 function noteForm(n, after) {
   const isNew = !n;
   n = n || { id: uid(), date: today(), subject: state.subjects[0]?.name || '', title: '', content: '' };
-  modal(`<h2>${isNew ? '🗒 공부 노트' : '✏️ 노트 수정'}<button class="icon-btn" data-close>✕</button></h2>
+  modal(`<h2>${isNew ? '공부 노트' : '노트 수정'}<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <form class="form">
       <div class="row"><label class="field"><span>날짜</span><input type="date" name="date" value="${n.date}" required></label>
         <label class="field"><span>과목</span><select name="subject">${state.subjects.map((s) => `<option ${s.name === n.subject ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label></div>
@@ -175,7 +176,7 @@ function notesList() {
       : '<div class="card empty">오늘 공부한 내용을 정리해보세요.<br>공부 시간은 타이머에서 자동으로 함께 보여요.</div>';
   }
   return Object.entries(byDate).map(([d, ns]) => `
-      <div class="card mb"><h3>${fmtDate(d, true)} <span class="right small muted">⏱ ${fmtDur(secOnDate(d))}</span></h3>
+      <div class="card mb"><h3>${fmtDate(d, true)} <span class="right small muted">${fmtDur(secOnDate(d))}</span></h3>
       ${ns.map((n) => `<div class="note-entry" data-note="${n.id}" style="border-color:${subjectColor(n.subject)};cursor:pointer">
         <div class="row small"><span class="tag">${esc(n.subject)}</span><b>${esc(n.title)}</b></div>
         ${n.content ? `<div class="c">${esc(n.content.length > 300 ? n.content.slice(0, 300) + '…' : n.content)}</div>` : ''}</div>`).join('')}</div>`).join('');
@@ -183,14 +184,14 @@ function notesList() {
 
 function renderNotes() {
   return `<div class="row mb"><button class="btn primary" data-act="note">＋ 공부 노트</button>
-      <input type="search" data-search value="${esc(search)}" placeholder="🔍 노트 검색" style="max-width:260px"></div>
+      <input type="search" data-search value="${esc(search)}" placeholder="노트 검색" style="max-width:260px"></div>
     <div class="chips scroll mb"><button class="chip ${!subjFilter ? 'on' : ''}" data-subj="">전체</button>${state.subjects.map((x) => `<button class="chip ${subjFilter === x.name ? 'on' : ''}" data-subj="${esc(x.name)}"><span class="dot" style="background:${x.color}"></span>${esc(x.name)}</button>`).join('')}</div>
     <div data-notelist>${notesList()}</div>`;
 }
 
 export default {
   render(el) {
-    el.innerHTML = seg([['books', '📚 독서'], ['notes', '🗒 공부 노트']], tab) + (tab === 'books' ? renderBooks() : renderNotes());
+    el.innerHTML = seg([['books', '독서'], ['notes', '공부 노트']], tab) + (tab === 'books' ? renderBooks() : renderNotes());
     const re = () => this.render(el);
     el.onclick = (e) => {
       const t = e.target;

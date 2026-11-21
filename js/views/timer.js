@@ -1,4 +1,5 @@
 import { state, save, subjectColor } from '../store.js';
+import { icon } from '../icons.js';
 import { esc, today, fmtDate, fmtDur, fmtClock, fmtMS, addDays, startOfWeek, WEEK, parseYmd, ymd, pad, uid, fmtShort, daysBetween } from '../util.js';
 import * as T from '../timers.js';
 import { openFocus } from '../focus.js';
@@ -29,14 +30,14 @@ function sessionList(date) {
   return `<ul class="list">${list.map((s) => {
     const d = new Date(s.start);
     return `<li><span class="dot" style="background:${subjectColor(s.subject)}"></span>
-      <span class="txt" style="flex:1">${esc(s.subject)} <span class="tag">${s.kind === 'pomo' ? '🍅 뽀모도로' : s.kind === 'manual' ? '직접 입력' : '타이머'}</span></span>
+      <span class="txt" style="flex:1">${esc(s.subject)} <span class="tag">${s.kind === 'pomo' ? '뽀모도로' : s.kind === 'manual' ? '직접 입력' : '타이머'}</span></span>
       <span class="muted small num">${pad(d.getHours())}:${pad(d.getMinutes())}</span><b class="num">${fmtDur(s.sec)}</b>
-      <button class="icon-btn" data-del-session="${s.id}" aria-label="삭제">🗑</button></li>`;
+      <button class="icon-btn" data-del-session="${s.id}" aria-label="삭제">${icon('trash', 16)}</button></li>`;
   }).join('')}</ul>`;
 }
 
 function addManual(after) {
-  modal(`<h2>✍️ 공부 시간 직접 입력<button class="icon-btn" data-close>✕</button></h2>
+  modal(`<h2>공부 시간 직접 입력<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <form class="form">
       <label class="field"><span>날짜</span><input type="date" name="date" value="${selDay}" max="${today()}" required></label>
       <label class="field"><span>과목</span><select name="subject">${state.subjects.map((s) => `<option>${esc(s.name)}</option>`).join('')}</select></label>
@@ -66,11 +67,11 @@ function renderStudy() {
     <div class="card">
       <h3>과목 선택</h3>${subjectChips(cur)}
       <div class="timer-face"><div class="clock" data-clock>${fmtClock(T.studyElapsed())}</div>
-        <div class="sub">${r ? (r.running ? '공부 중… 🔥' : '일시정지') : '시작 버튼을 눌러주세요'}</div></div>
+        <div class="sub">${r ? (r.running ? '공부 중… ' : '일시정지') : '시작 버튼을 눌러주세요'}</div></div>
       <div class="row" style="justify-content:center">
-        <button class="btn lg primary" data-act="toggle">${T.studyRunning() ? '❚❚ 일시정지' : r ? '▶ 계속' : '▶ 시작'}</button>
-        ${r ? '<button class="btn lg" data-act="stop">⏹ 종료·저장</button>' : ''}
-        <button class="btn lg soft" data-act="focus">🖥 집중 화면</button>
+        <button class="btn lg primary" data-act="toggle">${T.studyRunning() ? icon('pause', 18) + ' 일시정지' : r ? icon('play', 18) + ' 계속' : icon('play', 18) + ' 시작'}</button>
+        ${r ? `<button class="btn lg" data-act="stop">${icon('stop', 18)} 종료·저장</button>` : ''}
+        <button class="btn lg soft" data-act="focus">${icon('screen', 18)} 집중 화면</button>
       </div>
       <p class="tiny muted center mt">집중 화면은 화면이 꺼지지 않게 유지돼요. 아이패드를 세워두고 공부해보세요.</p>
     </div>
@@ -93,16 +94,16 @@ function renderPomo() {
       <div class="seg" style="display:flex;justify-content:center">${['focus', 'short', 'long'].map((k) => `<button data-phase="${k}" class="${p.phase === k ? 'on' : ''}">${T.PHASE_LABEL[k]}</button>`).join('')}</div>
       <div class="ring-wrap">${ring(1 - rem / T.pomoTotal(), { color: p.phase === 'focus' ? 'var(--accent)' : 'var(--good)' })}
         <div class="inner"><div class="clock" data-pclock>${fmtMS(rem)}</div><div class="muted">${esc(p.subject)}</div></div></div>
-      <div class="tomatoes center">${'🍅'.repeat(p.count % c.every || (p.count ? c.every : 0))}${'⚪️'.repeat(c.every - (p.count % c.every || (p.count ? c.every : 0)))}</div>
+      <div class="tomatoes center">${'<i class="tomato on"></i>'.repeat(p.count % c.every || (p.count ? c.every : 0))}${'<i class="tomato"></i>'.repeat(c.every - (p.count % c.every || (p.count ? c.every : 0)))}</div>
       <div class="row mt" style="justify-content:center">
-        <button class="btn lg primary" data-act="ptoggle">${p.running ? '❚❚ 일시정지' : '▶ 시작'}</button>
-        <button class="btn lg" data-act="preset">↺</button><button class="btn lg" data-act="pskip">⏭</button>
-        <button class="btn lg soft" data-act="pfocus">🖥</button>
+        <button class="btn lg primary" data-act="ptoggle">${p.running ? icon('pause', 18) + ' 일시정지' : icon('play', 18) + ' 시작'}</button>
+        <button class="btn lg" data-act="preset">${icon('refresh', 18)}</button><button class="btn lg" data-act="pskip">건너뛰기</button>
+        <button class="btn lg soft" data-act="pfocus">${icon('screen', 18)}</button>
       </div>
       <div class="mt"><div class="small muted mb">집중 과목 (완료 시 공부시간에 자동 기록)</div>${subjectChips(p.subject, 'psubj')}</div>
     </div>
     <div class="card">
-      <h3>⚙️ 설정</h3>
+      <h3>설정</h3>
       <form class="form" data-form="pomo">
         <div class="row"><label class="field"><span>집중(분)</span><input type="number" name="focus" min="1" max="180" value="${c.focus}"></label>
         <label class="field"><span>짧은 휴식</span><input type="number" name="short" min="1" max="60" value="${c.short}"></label>
@@ -111,9 +112,9 @@ function renderPomo() {
         <label class="row"><input type="checkbox" name="autoStart" ${c.autoStart ? 'checked' : ''}> 다음 단계 자동 시작</label>
         <label class="row"><input type="checkbox" name="sound" ${c.sound ? 'checked' : ''}> 알림 소리</label>
       </form>
-      <hr><div class="stats"><div class="stat"><b>${T.pomoCountOn(today())}</b><span>오늘 완료한 🍅</span></div>
+      <hr><div class="stats"><div class="stat"><b>${T.pomoCountOn(today())}</b><span>오늘 완료한 </span></div>
       <div class="stat"><b>${fmtDur(state.sessions.filter((s) => s.date === today() && s.kind === 'pomo').reduce((a, b) => a + b.sec, 0))}</b><span>뽀모도로 집중 시간</span></div></div>
-      <p class="tiny muted mt">※ iPad/iPhone 웹앱은 화면이 꺼지면 소리 알림이 울리지 않을 수 있어요. 집중 화면(🖥)을 켜두면 화면이 유지돼요.</p>
+      <p class="tiny muted mt">※ iPad/iPhone 웹앱은 화면이 꺼지면 소리 알림이 울리지 않을 수 있어요. 집중 화면을 켜두면 화면이 유지돼요.</p>
     </div>
   </div>`;
 }
@@ -160,7 +161,7 @@ function renderStats() {
           <div class="stat"><b>${fmtDur(total)}</b><span>총 공부</span></div>
           <div class="stat"><b>${fmtDur(total / nDays)}</b><span>하루 평균</span></div>
           <div class="stat"><b>${days}일</b><span>공부한 날</span></div>
-          <div class="stat"><b>${sessions.filter((s) => s.kind === 'pomo').length}</b><span>🍅</span></div>
+          <div class="stat"><b>${sessions.filter((s) => s.kind === 'pomo').length}</b><span></span></div>
         </div>${body}</div>
       <div class="card"><h3>과목별</h3>${subjectLegend(sessions)}</div>
       <div class="card"><h3>${fmtDate(selDay)} 기록 <span class="right num">${fmtDur(T.secOnDate(selDay))}</span></h3>${sessionList(selDay)}</div>
@@ -171,7 +172,7 @@ export default {
   render(el) {
     const q = location.hash.split('?')[1];
     if (q === 'pomo' || q === 'stats') { tab = q; history.replaceState(null, '', '#/timer'); }
-    el.innerHTML = seg([['study', '⏱ 공부 타이머'], ['pomo', '🍅 뽀모도로'], ['stats', '📊 통계']], tab) +
+    el.innerHTML = seg([['study', '공부 타이머'], ['pomo', '뽀모도로'], ['stats', '통계']], tab) +
       `<div data-body>${tab === 'study' ? renderStudy() : tab === 'pomo' ? renderPomo() : renderStats()}</div>`;
     const re = () => this.render(el);
 
@@ -209,7 +210,7 @@ export default {
       const a = t.closest('[data-act]')?.dataset.act;
       if (!a) return;
       if (a === 'toggle') T.studyRunning() ? T.studyPause() : T.studyStart();
-      if (a === 'stop') { const s = T.studyStop(); toast(s >= 10 ? `${fmtDur(s)} 저장했어요 👏` : '10초 미만은 저장되지 않아요'); }
+      if (a === 'stop') { const s = T.studyStop(); toast(s >= 10 ? `${fmtDur(s)} 저장했어요 ` : '10초 미만은 저장되지 않아요'); }
       if (a === 'focus') { if (!state.run.study) T.studyStart(); else if (!T.studyRunning()) T.studyStart(); openFocus('study'); }
       if (a === 'manual') return addManual(re);
       if (a === 'ptoggle') { T.pomoRunning() ? T.pomoPause() : T.pomoStart(); if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); }

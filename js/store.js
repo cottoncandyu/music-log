@@ -1,6 +1,7 @@
 // 모든 데이터는 기기 안(IndexedDB)에만 저장됩니다. 서버로 전송되지 않습니다.
 import { today } from './util.js';
 
+// 기존 기록 유지를 위해 DB 이름은 바꾸지 않습니다 (앱 이름: ARCHIVE)
 const DB_NAME = 'gongbu-desk';
 const STORE = 'kv';
 const KEY = 'state';
@@ -8,8 +9,19 @@ const KEY = 'state';
 export const SUBJECT_COLORS = ['#e57373', '#f0a35e', '#e3c04f', '#7cbf6b', '#4fb0a5', '#5c9ce6', '#8a7be0', '#d07ab8', '#8d8d8d'];
 
 const defaults = () => ({
-  version: 1,
-  profile: { name: '', goalMinutes: 240, goalWeight: null, theme: 'auto', penOnly: false },
+  version: 2,
+  profile: {
+    name: '', goalMinutes: 240, goalWeight: null, penOnly: false, lastSubject: '',
+    mode: 'study',            // 'study' | 'life'
+    theme: 'vintage',         // 'vintage' | 'mono' | 'pastel' | 'clean'
+    dark: 'auto',             // 'auto' | 'light' | 'dark'
+    accent: '',               // 빈 값이면 테마 기본색
+    uiFont: 'system', fontScale: 100, radius: -1, // -1 = 테마 기본
+    bgImage: '', bgDim: 30,
+    memoFont: 'gaegu', inkCorrect: true, inkStrength: 3,
+    budget: 0,
+    widgets: null,            // {study:[{id,on}], life:[{id,on}]} — null이면 기본
+  },
   subjects: [
     { name: '국어', color: '#e57373' }, { name: '영어', color: '#5c9ce6' }, { name: '수학', color: '#7cbf6b' },
     { name: '전공', color: '#8a7be0' }, { name: '자격증', color: '#f0a35e' }, { name: '기타', color: '#8d8d8d' },
@@ -28,7 +40,20 @@ const defaults = () => ({
   weights: {},      // date -> kg
   sleeps: {},       // date -> {wake, bed}
   friends: [],      // 공유 코드로 받은 친구 기록
+  bucket: [],       // {id, title, term:'short'|'long', start, end, category, memo, done, doneDate}
+  music: [],        // {id, date, title, artist, rating, tag, memo, link}
+  money: [],        // {id, date, type:'in'|'out', amount, category, memo}
+  wishes: [],       // {id, title, price, link, priority, photo, memo, bought, boughtDate, created}
+  quotes: [],       // 직접 추가한 문장 {id, text, by}
 });
+
+/** 이전 버전 데이터 변환 */
+function migrate(s) {
+  const p = s.profile || {};
+  if (p.theme === 'auto' || p.theme === 'light' || p.theme === 'dark') { p.dark = p.theme; p.theme = 'vintage'; }
+  s.version = 2;
+  return s;
+}
 
 export const state = defaults();
 
@@ -82,7 +107,7 @@ export async function load() {
     // 예전에 localStorage로 저장된 기록이 있으면 가져오기
     try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { saved = null; }
   }
-  if (saved) Object.assign(state, merge(defaults(), saved));
+  if (saved) Object.assign(state, merge(defaults(), migrate(saved)));
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch { /* noop */ }
 }
 
@@ -130,7 +155,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 export function replaceAll(data) {
   for (const k of Object.keys(state)) delete state[k];
-  Object.assign(state, merge(defaults(), data));
+  Object.assign(state, merge(defaults(), migrate(data)));
   return writeNow();
 }
 export function resetAll() { return replaceAll({}); }
