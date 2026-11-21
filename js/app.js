@@ -82,7 +82,13 @@ function updateRunningPill() {
 async function start() {
   await load();
   applyTheme();
-  onSaveError(() => toast('⚠️ 저장 공간이 부족해요. 설정에서 백업 후 사진을 정리해주세요.', 5000));
+  let lastWarn = 0;
+  onSaveError((e, e2) => {
+    if (Date.now() - lastWarn < 60000) return; // 1분에 한 번만
+    lastWarn = Date.now();
+    const quota = [e, e2].some((x) => x && x.name === 'QuotaExceededError');
+    toast(quota ? '⚠️ 저장 공간이 부족해요. 설정 → 백업 후 사진을 정리해주세요.' : `⚠️ 저장에 실패했어요 (${e && e.name}). 앱을 완전히 닫았다 다시 열어주세요.`, 5000);
+  });
   addEventListener('hashchange', route);
   addEventListener('themechange', applyTheme);
   addEventListener('datachange', () => { if (current && current.onData) current.onData(); });

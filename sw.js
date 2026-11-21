@@ -1,5 +1,5 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `gongbu-desk-${VERSION}`;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',

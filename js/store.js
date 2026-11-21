@@ -43,11 +43,22 @@ function openDB() {
 }
 function idb(mode, fn) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, mode);
+    let tx;
+    try { tx = db.transaction(STORE, mode); } catch (e) { reject(e); return; }
     const r = fn(tx.objectStore(STORE));
     tx.oncomplete = () => resolve(r && r.result);
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(tx.error || new Error('IDB error'));
+    tx.onabort = () => reject(tx.error || new Error('IDB abort'));
   });
+}
+
+async function connect() {
+  try { db && db.close(); } catch { /* noop */ }
+  db = await openDB();
+  // iPadOS/iOS는 앱이 백그라운드로 가면 DB 연결을 끊는 경우가 있어 재연결 표시
+  db.onclose = () => { db = null; };
+  db.onversionchange = () => { try { db.close(); } catch { /* noop */ } db = null; };
+  return db;
 }
 
 function merge(base, saved) {
@@ -56,14 +67,19 @@ function merge(base, saved) {
   return out;
 }
 
+export const storageInfo = { engine: 'indexeddb', lastError: '' };
+
 export async function load() {
   let saved = null;
   try {
-    db = await openDB();
+    await connect();
     saved = await idb('readonly', (s) => s.get(KEY));
   } catch (e) {
-    console.warn('IndexedDB 사용 불가, localStorage 사용', e);
+    console.warn('IndexedDB 열기 실패', e);
     db = null;
+  }
+  if (!saved) {
+    // 예전에 localStorage로 저장된 기록이 있으면 가져오기
     try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { saved = null; }
   }
   if (saved) Object.assign(state, merge(defaults(), saved));
@@ -74,14 +90,37 @@ let timer = null;
 const listeners = new Set();
 export function onSaveError(fn) { listeners.add(fn); }
 
+async function putIDB() {
+  if (!db) await connect();
+  await idb('readwrite', (s) => s.put(state, KEY));
+}
+
 async function writeNow() {
   timer = null;
   try {
-    if (db) await idb('readwrite', (s) => s.put(state, KEY));
-    else localStorage.setItem(KEY, JSON.stringify(state));
+    try {
+      await putIDB();
+    } catch (e1) {
+      // 연결이 끊긴 경우가 대부분 → 재연결 후 한 번 더
+      console.warn('IDB 저장 재시도', e1);
+      db = null;
+      await putIDB();
+    }
+    storageInfo.engine = 'indexeddb';
+    storageInfo.lastError = '';
+    try { localStorage.removeItem(KEY); } catch { /* noop */ }
   } catch (e) {
     console.error(e);
-    listeners.forEach((fn) => fn(e));
+    // 최후 수단: localStorage (용량 약 5MB)
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      storageInfo.engine = 'localstorage';
+      storageInfo.lastError = `${e.name || 'Error'}: ${e.message || ''}`;
+      return;
+    } catch (e2) {
+      storageInfo.lastError = `${e.name || 'Error'} / ${e2.name || 'Error'}`;
+      listeners.forEach((fn) => fn(e, e2));
+    }
   }
 }
 export function save() { clearTimeout(timer); timer = setTimeout(writeNow, 250); }

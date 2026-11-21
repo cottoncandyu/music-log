@@ -1,4 +1,4 @@
-import { state, save, replaceAll, resetAll, SUBJECT_COLORS } from '../store.js';
+import { state, save, replaceAll, resetAll, SUBJECT_COLORS, storageInfo } from '../store.js';
 import { esc, today, downloadBlob } from '../util.js';
 import { toast, confirmBox } from '../ui.js';
 
@@ -6,7 +6,9 @@ export default {
   async render(el) {
     const p = state.profile;
     let usage = '';
-    try { const est = await navigator.storage?.estimate?.(); if (est) usage = `${(est.usage / 1048576).toFixed(1)}MB 사용 중`; } catch { /* noop */ }
+    try { const est = await navigator.storage?.estimate?.(); if (est) usage = `${(est.usage / 1048576).toFixed(1)}MB 사용 / 약 ${(est.quota / 1048576).toFixed(0)}MB 가능`; } catch { /* noop */ }
+    const dataMB = (new Blob([JSON.stringify(state)]).size / 1048576).toFixed(2);
+    usage += ` · 기록 데이터 ${dataMB}MB · 저장 방식 ${storageInfo.engine === 'indexeddb' ? 'IndexedDB' : 'localStorage(임시)'}${storageInfo.lastError ? ` · 최근 오류: ${storageInfo.lastError}` : ''}`;
     el.innerHTML = `
       <div class="grid two">
         <div class="card"><h3>🙂 프로필</h3><div class="form">
@@ -26,7 +28,7 @@ export default {
         </div>
 
         <div class="card"><h3>💾 백업 · 복원</h3>
-          <p class="small muted">모든 기록은 이 기기의 브라우저 저장소에만 있어요. ${usage}<br>
+          <p class="small muted">모든 기록은 이 기기의 브라우저 저장소에만 있어요.<br><span class="tiny">${esc(usage)}</span><br>
           Safari 방문 기록·웹사이트 데이터를 지우면 기록도 사라지니 <b>주기적으로 백업</b>해주세요.</p>
           <div class="row"><button class="btn primary" data-act="export">⬇️ 백업 파일 저장</button>
             <label class="btn">⬆️ 백업 불러오기<input type="file" accept="application/json,.json" data-import hidden></label></div>
