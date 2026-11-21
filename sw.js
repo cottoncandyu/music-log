@@ -1,5 +1,5 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `archive-${VERSION}`;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
