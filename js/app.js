@@ -24,6 +24,7 @@ import money from './views/money.js';
 import wish from './views/wish.js';
 import calendar from './views/calendar.js';
 import calc from './views/calc.js';
+import journal from './views/journal.js';
 
 // [key, icon, label, view, modes] — 데일리 모드는 모든 메뉴를 보여줘요
 const S = ['study', 'daily'], L = ['life', 'daily'], ALL = ['study', 'life', 'daily'];
@@ -36,6 +37,7 @@ const ROUTES = [
   ['dday', 'calendar', '디데이', dday, S],
   ['records', 'book', '독서·공부', records, S],
   ['diary', 'diary', '다이어리', diary, L],
+  ['journal', 'journal', '다꾸북', journal, L],
   ['bucket', 'flag', '버킷리스트', bucket, L],
   ['music', 'music', '음악', music, L],
   ['money', 'wallet', '가계부', money, L],

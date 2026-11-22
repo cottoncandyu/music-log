@@ -1,5 +1,5 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = `archive-${VERSION}`;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css', './css/kfonts.css',
@@ -7,7 +7,7 @@ const ASSETS = [
   './js/icons.js', './js/art.js', './js/art2.js', './js/art3.js', './js/decor.js', './js/theme.js', './js/quotes.js',
   './js/views/home.js', './js/views/memo.js', './js/views/timer.js', './js/views/todo.js', './js/views/dday.js',
   './js/views/diary.js', './js/views/records.js', './js/views/health.js', './js/views/share.js', './js/views/settings.js',
-  './js/views/bucket.js', './js/views/music.js', './js/views/money.js', './js/views/wish.js', './js/views/calendar.js', './js/views/calc.js',
+  './js/views/bucket.js', './js/views/music.js', './js/views/money.js', './js/views/wish.js', './js/views/calendar.js', './js/views/calc.js', './js/views/journal.js',
   './js/sync.js', './js/firebase.js', './js/firebase-config.js', './js/views/synccard.js',
   './icons/icon.svg', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
 ];

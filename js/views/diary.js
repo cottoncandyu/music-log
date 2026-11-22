@@ -114,7 +114,7 @@ export default {
   render(el) {
     const q = takeQuery('diary');
     if (isYmd(q.date)) { date = q.date; view = 'write'; }
-    el.innerHTML = `<div class="seg"><button data-seg="write" class="${view === 'write' ? 'on' : ''}">쓰기</button><button data-seg="cal" class="${view === 'cal' ? 'on' : ''}">달력</button></div>` +
+    el.innerHTML = `<div class="seg"><button data-seg="write" class="${view === 'write' ? 'on' : ''}">쓰기</button><button data-seg="cal" class="${view === 'cal' ? 'on' : ''}">달력</button></div> <a class="btn sm soft" href="#/journal" style="vertical-align:top">${icon('journal', 14)} 다꾸북</a>` +
       (view === 'write' ? writer() : calendar());
     const re = () => this.render(el);
     const get = () => diaryOf(date, true);

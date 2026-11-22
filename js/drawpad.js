@@ -8,10 +8,10 @@ import { modal } from './ui.js';
 import { STICKERS, MOODS, WEATHERS, ALL_TAPES, stickerSvg, stickerDefaultW, tapeSvg, moodSvg, weatherSvg, STICKER_GROUPS, PAPERS, paperSvg, paperDefaultW } from './art.js';
 import { handFont, fontPicker } from './theme.js';
 import { recordSvg, timetableSvg, todoCardSvg, dateTextSvg, DATE_TEXT_STYLES } from './decor.js';
-import { collageSvg, DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS } from './art3.js';
+import { collageSvg, DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS, DOODLE_STICKERS } from './art3.js';
 
 const W = 900, H = 1200, S = 1.5; // 논리 좌표 900×1200, 실제 픽셀 1.5배
-export const PAPER_STYLES = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지']];
+export const PAPER_STYLES = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지'], ['kraft', '크라프트'], ['half', '반반'], ['torn', '찢은 노트'], ['news', '신문지'], ['manuscript', '원고지'], ['music', '오선지'], ['vintage', '빈티지'], ['pinkgrid', '핑크 모눈'], ['skygrid', '하늘 모눈'], ['gingham', '깅엄'], ['polka', '도트 무늬'], ['board', '칠판']];
 const INKS = ['#2b2522', '#5b5f66', '#8b6f5a', '#c4544a', '#e0896b', '#e2b448', '#6e9a6a', '#4f8fa8', '#4a6fc4', '#8a72c8', '#d97aa6', '#ffffff'];
 
 // ---------- 선 그리기 ----------
@@ -161,7 +161,7 @@ function photoInner(it) {
   }
   return `<div class="pframe2 fr-${f}"><img src="${src}" alt="" draggable="false"></div>`;
 }
-const TEXT_FX = [['none', '기본'], ['outline', '흰 테두리'], ['shadow', '그림자'], ['marker', '형광펜'], ['label', '라벨'], ['collage', '콜라주 글자']];
+const TEXT_FX = [['none', '기본'], ['bubble', '말랑 글자'], ['outline', '흰 테두리'], ['shadow', '그림자'], ['marker', '형광펜'], ['label', '라벨'], ['collage', '콜라주 글자']];
 function textStyle(it) {
   const c = it.color || '#2b2522';
   switch (it.fx) {
@@ -169,6 +169,10 @@ function textStyle(it) {
     case 'shadow': return `text-shadow:.07em .07em 0 ${c}55;`;
     case 'marker': return `background:linear-gradient(transparent 58%, ${it.bg || '#f8e27a'}cc 58%, ${it.bg || '#f8e27a'}cc 92%, transparent 92%);`;
     case 'label': return `background:${it.bg || '#f6d6df'};padding:.1em .4em;box-shadow:0 1px 2px rgba(0,0,0,.15);`;
+    case 'bubble': { // 'ABOUT ME' 같은 동글동글 테두리 글자: 연한 속 + 진한 테두리 + 흰 바깥선
+      const ring = (r, col) => Array.from({ length: 16 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return `${(Math.cos(a) * r).toFixed(3)}em ${(Math.sin(a) * r).toFixed(3)}em 0 ${col}`; }).join(',');
+      return `color:${it.bg || '#dfe8fb'};font-weight:700;letter-spacing:.04em;text-shadow:${ring(0.035, c)},${ring(0.06, c)},${ring(0.1, '#fff')},0 .12em .14em rgba(0,0,0,.18);`;
+    }
     default: return '';
   }
 }
@@ -261,7 +265,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
     </div>
     <div class="pad-panel" data-panelbox hidden></div>
     <div class="row small" style="margin-bottom:8px"><span class="muted">내지</span>
-      <div class="chips">${PAPER_STYLES.map(([k, l]) => `<button class="chip ${page.paper === k ? 'on' : ''}" data-paper="${k}">${l}</button>`).join('')}</div></div>
+      <div class="chips scroll paper-chips">${PAPER_STYLES.map(([k, l]) => `<button class="chip ${page.paper === k ? 'on' : ''}" data-paper="${k}">${l}</button>`).join('')}</div></div>
     <div class="pad paper-${page.paper}">
       <div class="items"></div>
       <canvas width="${W * S}" height="${H * S}" data-ink></canvas>
@@ -341,7 +345,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
 
   // ---------- 패널 (스티커 / 테이프) ----------
   let stTab = '소품';
-  const ST_TABS = () => [['날짜', null], ['소품', STICKERS], ['Y2K', Y2K_STICKERS], ['패턴 말풍선', PATTERN_BUBBLES], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['라벨', LABEL_STICKERS], ['감정', null], ['날씨', null]];
+  const ST_TABS = () => [['날짜', null], ['낙서', DOODLE_STICKERS], ['소품', STICKERS], ['Y2K', Y2K_STICKERS], ['패턴 말풍선', PATTERN_BUBBLES], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['라벨', LABEL_STICKERS], ['감정', null], ['날씨', null]];
   function renderPanel() {
     const box = host.querySelector('[data-panelbox]');
     box.hidden = !panel;
@@ -588,6 +592,20 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
     setTool('hand'); renderItems(); changed();
   });
   return { addItem: (it) => { const c = visibleCenter(); addItem({ x: c.x, y: c.y, r: 0, ...it }); pad.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
+}
+
+/** 꾸민 페이지를 그대로 작게 보여주기 (편집 불가 미리보기) */
+export function renderPagePreview(host, page, scale = 0.5) {
+  page = page || { paper: 'blank', strokes: [], items: [] };
+  host.innerHTML = `<div class="pad preview paper-${page.paper || 'lined'}"><div class="items">${(page.items || []).slice().sort((a, b) => (a.z || 0) - (b.z || 0)).map((it) => `<div class="pitem k-${it.k}" style="${itemStyle(it)}">${itemInner(it)}</div>`).join('')}</div><canvas width="${Math.round(W * scale)}" height="${Math.round(H * scale)}"></canvas></div>`;
+  const cv = host.querySelector('canvas');
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  for (const st of page.strokes || []) {
+    if (st.t === 'marker') { // 미리보기는 단순하게
+      ctx.save(); ctx.globalAlpha = 0.38; ctx.strokeStyle = st.c; ctx.lineWidth = st.w * 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; pathOf(ctx, st.p); ctx.stroke(); ctx.restore();
+    } else drawStroke(ctx, st);
+  }
 }
 
 /** 예전 버전(그림 PNG + 이모지 스티커) → 새 페이지 구조 */
