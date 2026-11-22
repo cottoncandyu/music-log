@@ -5,10 +5,12 @@ import { icon } from '../icons.js';
 import { THEMES, FONTS, fontPicker } from '../theme.js';
 import { WIDGETS, widgetList } from './home.js';
 import { BUILTIN } from '../quotes.js';
+import { mountSyncCard } from './synccard.js';
 
 let wMode = null;
 
 export default {
+  destroy() { if (this._unsync) this._unsync(); this._unsync = null; },
   async render(el) {
     const p = state.profile;
     wMode = wMode || p.mode;
@@ -21,6 +23,7 @@ export default {
     if (scrollToWidgets) history.replaceState(null, '', '#/settings');
 
     el.innerHTML = `
+      <div class="card mb" data-synccard></div>
       <div class="card mb"><h3>${icon('sparkle', 18)} 테마</h3>
         <div class="theme-pick">${THEMES.map((t) => `<button data-pick-theme="${t.id}" class="${p.theme === t.id ? 'on' : ''}">
           <span class="sw3">${t.sw.map((c) => `<i style="background:${c}"></i>`).join('')}</span><b>${t.name}</b><span class="tiny muted">${t.desc}</span></button>`).join('')}</div>
@@ -90,6 +93,8 @@ export default {
         </div>
       </div>`;
 
+    if (this._unsync) this._unsync();
+    this._unsync = mountSyncCard(el.querySelector('[data-synccard]'));
     if (scrollToWidgets) setTimeout(() => el.querySelector('#widgets')?.scrollIntoView({ behavior: 'smooth' }), 50);
     const re = () => this.render(el);
     const theme = () => dispatchEvent(new Event('themechange'));

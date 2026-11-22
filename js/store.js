@@ -156,7 +156,26 @@ async function writeNow() {
     }
   }
 }
-export function save() { clearTimeout(timer); timer = setTimeout(writeNow, 250); }
+const changeListeners = new Set();
+/** 기록이 바뀔 때마다 알림 (기기 연동용) */
+export function onChange(fn) { changeListeners.add(fn); }
+export function save() {
+  clearTimeout(timer); timer = setTimeout(writeNow, 250);
+  changeListeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
+}
+/** 다른 기기에서 받은 값 적용 (알림 없이 저장만) */
+export function saveQuiet() { clearTimeout(timer); timer = setTimeout(writeNow, 250); }
+export { merge as mergeDefaults, defaults, migrate };
+
+// 연동 상태 등 부가 데이터 저장 (기록과 별도 키)
+export async function kvGet(key) {
+  try { if (!db) await connect(); return await idb('readonly', (s) => s.get(key)); }
+  catch { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
+}
+export async function kvSet(key, value) {
+  try { if (!db) await connect(); await idb('readwrite', (s) => s.put(value, key)); }
+  catch { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ } }
+}
 export function flush() { if (timer) { clearTimeout(timer); writeNow(); } }
 addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
@@ -164,6 +183,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 export function replaceAll(data) {
   for (const k of Object.keys(state)) delete state[k];
   Object.assign(state, merge(defaults(), migrate(data)));
+  changeListeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
   return writeNow();
 }
 export function resetAll() { return replaceAll({}); }

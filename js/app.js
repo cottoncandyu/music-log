@@ -5,6 +5,8 @@ import { icon } from './icons.js';
 import { applyTheme } from './theme.js';
 import * as T from './timers.js';
 import { openFocus } from './focus.js';
+import './sync.js';
+import { initAuth } from './firebase.js';
 
 import home from './views/home.js';
 import memo from './views/memo.js';
@@ -115,12 +117,24 @@ async function start() {
   addEventListener('hashchange', route);
   addEventListener('themechange', () => { applyTheme(); renderNav(); });
   addEventListener('datachange', () => { if (current && current.onData) current.onData(); });
+  // 다른 기기에서 받은 기록 반영 — 입력 중이면 끝난 뒤에 다시 그림
+  let pendingSync = false;
+  const applySynced = () => {
+    const a = document.activeElement;
+    if (a && a.matches('input, textarea, select') && document.getElementById('main').contains(a)) { pendingSync = true; return; }
+    if (document.querySelector('.modal-back, .focus')) { pendingSync = true; return; }
+    pendingSync = false; applyTheme(); renderNav(); rerender();
+  };
+  addEventListener('syncapplied', applySynced);
+  document.addEventListener('focusout', () => { if (pendingSync) setTimeout(applySynced, 300); });
+  document.addEventListener('click', () => { if (pendingSync && !document.querySelector('.modal-back, .focus')) setTimeout(applySynced, 300); });
   document.addEventListener('pointerdown', T.unlockAudio, { once: true });
   document.getElementById('nav').addEventListener('click', (e) => {
     const m = e.target.closest('[data-mode]');
     if (m) setMode(m.dataset.mode);
   });
   route();
+  initAuth().catch((e) => console.warn('auth', e));
   let lastDay = new Date().toDateString();
   setInterval(() => {
     T.tick();

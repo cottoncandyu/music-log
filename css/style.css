@@ -709,3 +709,6 @@ a.card.dday-hero, .card.dday-hero { color: var(--accent-ink); }
 .paper-grid svg { max-height: 110px; }
 .widgets .widget.clock-w { display: flex; }
 [data-clockbox] { display: flex; flex-direction: column; align-items: center; }
+.tag.sync-ok { background: color-mix(in srgb, var(--good) 18%, var(--surface)); color: var(--good); }
+.tag.sync-syncing { background: var(--accent-soft); color: var(--accent); }
+.tag.sync-error, .tag.sync-offline { background: color-mix(in srgb, var(--bad) 15%, var(--surface)); color: var(--bad); }
