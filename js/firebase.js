@@ -61,8 +61,12 @@ const MSG = {
   'auth/too-many-requests': '시도가 너무 많아요. 잠시 후 다시 해주세요',
   'auth/network-request-failed': '인터넷 연결을 확인해주세요',
   'auth/operation-not-allowed': 'Firebase 콘솔에서 이메일/비밀번호 로그인을 켜주세요',
+  'auth/api-key-not-valid.-please-pass-a-valid-api-key.': '설정값(apiKey)이 맞지 않아요. 콘솔의 값을 다시 확인해주세요',
+  'auth/invalid-api-key': '설정값(apiKey)이 맞지 않아요. 콘솔의 값을 다시 확인해주세요',
+  'auth/unauthorized-domain': 'Authentication > 설정 > 승인된 도메인에 cottoncandyu.github.io 를 추가해주세요',
+  'permission-denied': 'Firestore 규칙이 게시되지 않았어요. 규칙 탭에서 게시해주세요',
 };
-export const authMessage = (e) => MSG[e?.code] || e?.message || '알 수 없는 오류';
+export const authMessage = (e) => MSG[e?.code] || (String(e?.code || '').startsWith('auth/api-key') ? MSG['auth/invalid-api-key'] : '') || e?.message || '알 수 없는 오류';
 
 export async function signIn(email, pw) { await load(); await watchUserOnce(); return sdk.A.signInWithEmailAndPassword(sdk.auth, email, pw); }
 export async function signUp(email, pw) { await load(); await watchUserOnce(); return sdk.A.createUserWithEmailAndPassword(sdk.auth, email, pw); }

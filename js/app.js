@@ -177,5 +177,5 @@ export async function hardRefresh() {
   } catch { /* noop */ }
   flushAndReload();
 }
-export const APP_VERSION = 'v13';
+export const APP_VERSION = 'v14';
 start();
