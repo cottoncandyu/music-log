@@ -145,8 +145,10 @@ export const HAND_FONTS = [
 ];
 export const FONT_GROUPS = ['손글씨', '나눔손글씨', '귀여운', '픽셀', '디자인', '고딕', '명조', '영문'];
 // 앱 전체 글꼴로 쓰기 좋은(읽기 편한) 글꼴만
-const UI_IDS = ['pretendard', 'nanum-square-round', 'nanum-square', 'nanum-barun-gothic', 'line-seed', 'maruburi', 'ridi-batang', 'system', 'noto-sans', 'gothic-a1', 'nanum-gothic', 'gowun-dodum', 'ibm-plex', 'sunflower', 'nanum-myeongjo', 'gowun-batang', 'noto-serif', 'hahmlet', 'jua', 'stylish', 'do-hyeon', 'orbit'];
-export const FONTS = HAND_FONTS.filter((f) => UI_IDS.includes(f.id)).map((f) => ({ ...f, name: f.id === 'system' ? '기본 (애플 고딕)' : f.name }));
+// 앱 글꼴로 쓸 때 크게 그리는 전용 글꼴 (css/kfonts.css 의 size-adjust 복사본)
+const UI_CSS = { 'nh-junghagsaeng': "'ARCHIVE UI 중학생', '나눔손글씨 중학생', 'Gowun Dodum', sans-serif" };
+const UI_IDS = ['nh-junghagsaeng', 'pretendard', 'nanum-square-round', 'nanum-square', 'nanum-barun-gothic', 'line-seed', 'maruburi', 'ridi-batang', 'system', 'noto-sans', 'gothic-a1', 'nanum-gothic', 'gowun-dodum', 'ibm-plex', 'sunflower', 'nanum-myeongjo', 'gowun-batang', 'noto-serif', 'hahmlet', 'jua', 'stylish', 'do-hyeon', 'orbit'];
+export const FONTS = ['system', ...UI_IDS.filter((i) => i !== 'system')].map((id) => HAND_FONTS.find((f) => f.id === id)).filter(Boolean).map((f) => ({ ...f, name: f.id === 'system' ? '기본 (애플 고딕)' : f.group === '나눔손글씨' ? '나눔손글씨 ' + f.name : f.name }));
 export const handFont = (id) => HAND_FONTS.find((f) => f.id === id) || HAND_FONTS[0];
 
 /** 그룹별 글꼴 선택 버튼 HTML (attr: data-속성 이름) */
@@ -171,8 +173,9 @@ export function applyTheme() {
   if (p.accent && !isDark()) set('--accent-soft', `color-mix(in srgb, ${p.accent} 18%, var(--surface))`); else set('--accent-soft', '');
   set('--radius', p.radius >= 0 ? p.radius + 'px' : '');
   const f = FONTS.find((x) => x.id === p.uiFont);
-  set('--font-ui', f && f.id !== 'system' ? f.css : '');
-  set('--font-head', f && f.id !== 'system' ? f.css : '');
+  const uiCss = f ? UI_CSS[f.id] || f.css : '';
+  set('--font-ui', f && f.id !== 'system' ? uiCss : '');
+  set('--font-head', f && f.id !== 'system' ? uiCss : '');
   set('--fs', p.fontScale && p.fontScale !== 100 ? String(p.fontScale / 100) : '');
   set('--font-memo', handFont(p.memoFont).css);
   if (p.bgImage) {

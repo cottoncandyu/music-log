@@ -65,3 +65,5 @@
 @font-face { font-family: '학교안심 돋보기'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-dotbogi@0.1.0/HakgyoansimDotbogiR.woff2') format('woff2'); }
 @font-face { font-family: 'Galmuri11'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2') format('woff2'); }
 @font-face { font-family: 'Galmuri9'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri9.woff2') format('woff2'); }
+/* 앱 글꼴 전용: 손글씨는 같은 크기에서 작게 보여서 글자 자체를 135%로 키운 복사본 (size-adjust, iPadOS 17+ Safari) */
+@font-face { font-family: 'ARCHIVE UI 중학생'; font-weight: 400; font-display: swap; size-adjust: 135%; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-junghagsaeng@0.2.0/junghagsaeng.woff2') format('woff2'); }
