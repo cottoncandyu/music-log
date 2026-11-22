@@ -147,3 +147,84 @@ export const DOODLE_STICKERS = [
   { id: 'd-swirl', w: 0.1, svg: () => D('0 0 100 100', '<path d="M50 50 C56 46 56 38 48 38 C38 38 36 52 46 58 C60 66 72 52 68 38 C62 20 36 18 26 36 C14 56 30 82 56 82"/>', '#9a7fd1', 3) },
   { id: 'd-bracket', w: 0.12, svg: () => D('0 0 60 140', '<path d="M44 8 C20 10 30 60 12 70 C30 80 20 130 44 132"/>', INK, 3) },
 ];
+
+// ---------- 음료 (카페 컵 일러스트, 특정 브랜드 로고 없음) ----------
+const LBL = (x, y, t, size = 11, fill = INK) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Jua, 'Gowun Dodum', sans-serif" font-size="${size}" fill="${fill}">${esc(t)}</text>`;
+/** 아이스 플라스틱 컵: layers = [[색, 비율]...] 아래→위, top = 'cream'|'dome'|'flat', extra = 토핑 */
+function iceCup(layers, { top = 'flat', straw = '#222', label = '', extra = '', ice = true, sleeve = '' } = {}) {
+  const x1 = 22, x2 = 78, yTop = 40, yBot = 132, bx1 = 30, bx2 = 70;
+  const lerpX = (y, left) => (left ? x1 + ((bx1 - x1) * (y - yTop)) / (yBot - yTop) : x2 - ((x2 - bx2) * (y - yTop)) / (yBot - yTop));
+  let y = yBot, g = '';
+  const fillH = (yBot - 50);
+  for (const [c, r] of layers) {
+    const h = fillH * r, y0 = y - h;
+    g += `<path d="M${lerpX(y0, 1)} ${y0} L${lerpX(y0, 0)} ${y0} L${lerpX(y, 0)} ${y} L${lerpX(y, 1)} ${y}Z" fill="${c}"/>`;
+    y = y0;
+  }
+  const iceCubes = ice ? [[36, 64], [54, 58], [44, 80], [60, 76]].filter(([, yy]) => yy > y).map(([xx, yy]) => `<rect x="${xx}" y="${yy}" width="12" height="11" rx="2.5" fill="#fff" opacity=".45"/>`).join('') : '';
+  const lid = top === 'dome' ? `<path d="M18 40 Q50 2 82 40Z" fill="#fff" opacity=".55" stroke="#c9c9cf" stroke-width="1.5"/><rect x="16" y="36" width="68" height="7" rx="3.5" fill="#e9e9ee" stroke="#c9c9cf"/>`
+    : top === 'cream' ? `<path d="M24 46 C20 30 34 26 38 32 C40 20 60 20 62 32 C68 26 80 32 76 46Z" fill="#fffaf0" stroke="#eadfc9" stroke-width="1.5"/>`
+    : `<rect x="16" y="36" width="68" height="7" rx="3.5" fill="#e9e9ee" stroke="#c9c9cf"/>`;
+  return K('0 0 100 140', `<path d="M${x1} ${yTop} L${x2} ${yTop} L${bx2} ${yBot} Q50 ${yBot + 4} ${bx1} ${yBot}Z" fill="#ffffff" opacity=".35" stroke="#b9bcc6" stroke-width="1.6"/>
+    ${g}${iceCubes}${sleeve ? `<path d="M${lerpX(78, 1) - 1} 78 L${lerpX(78, 0) + 1} 78 L${lerpX(104, 0) + 1} 104 L${lerpX(104, 1) - 1} 104Z" fill="${sleeve}"/>` : ''}
+    ${label ? `<rect x="${50 - Math.min(26, label.length * 4.6 + 6)}" y="85" width="${Math.min(52, label.length * 9.2 + 12)}" height="15" rx="3" fill="#fffdf8" stroke="#e3ddd0" stroke-width=".8"/>${LBL(50, 96, label, label.length > 5 ? 7.5 : 9.5, INK)}` : ''}
+    <path d="M${x1 + 3} ${yTop + 4} L${bx1 + 2} ${yBot - 4}" stroke="#fff" stroke-width="3" opacity=".6" stroke-linecap="round"/>
+    <path d="M58 ${top === 'dome' ? 12 : 6} L52 ${yTop + 40}" stroke="${straw}" stroke-width="5" stroke-linecap="round"/>${lid}${extra}`);
+}
+function hotCup(body, sleeve, label, steam = true) {
+  return K('0 0 100 140', `${steam ? '<path d="M42 22 c-6 -8 6 -10 0 -18 M58 22 c-6 -8 6 -10 0 -18" stroke="#b9b9c0" stroke-width="2.5" fill="none" stroke-linecap="round"/>' : ''}
+    <rect x="18" y="30" width="64" height="10" rx="4" fill="#3a3330"/><path d="M22 40 H78 L72 130 Q50 134 28 130Z" fill="${body}"/>
+    <path d="M25 70 H75 L73 100 H27Z" fill="${sleeve}"/>${LBL(50, 89, label, 10, '#fff')}`);
+}
+
+export const DRINK_STICKERS = [
+  { id: 'dr-matcha', w: 0.13, svg: () => iceCup([['#f3eee2', 0.35], ['#9ec27a', 0.45]], { straw: '#5f8a4f', label: '말차라떼' }) },
+  { id: 'dr-cookie', w: 0.13, svg: () => iceCup([['#d9c3a8', 0.75]], { top: 'cream', straw: '#3a2a20', label: '쿠키 프라페', ice: false, extra: '<g fill="#3a2a20">' + [[36, 32], [50, 26], [62, 34], [44, 40], [58, 42]].map(([x, y]) => `<rect x="${x}" y="${y}" width="6" height="5" rx="1" transform="rotate(${x % 30} ${x} ${y})"/>`).join('') + '</g><path d="M30 60 L70 60" stroke="#3a2a20" stroke-width="2" stroke-dasharray="3 4"/>' }) },
+  { id: 'dr-americano', w: 0.13, svg: () => iceCup([['#3b2418', 0.82]], { straw: '#222', label: '아아', sleeve: '#8a5a3a' }) },
+  { id: 'dr-latte', w: 0.13, svg: () => iceCup([['#f3e9d8', 0.45], ['#a87a52', 0.35]], { straw: '#222', label: '카페라떼' }) },
+  { id: 'dr-strawberry', w: 0.13, svg: () => iceCup([['#e8506a', 0.25], ['#f9c9d4', 0.5]], { straw: '#e8506a', label: '딸기라떼', top: 'dome', extra: '<path d="M50 20 c-8 0 -10 10 0 16 c10 -6 8 -16 0 -16z" fill="#e8506a"/><path d="M46 19 l4 -4 l4 4" stroke="#5f8a4f" stroke-width="2" fill="none"/>' }) },
+  { id: 'dr-choco', w: 0.13, svg: () => iceCup([['#5a3626', 0.78]], { top: 'cream', straw: '#5a3626', label: '초코', extra: '<path d="M32 34 q8 6 18 0 q10 6 18 0" stroke="#5a3626" stroke-width="2.5" fill="none"/>' }) },
+  { id: 'dr-yuja', w: 0.13, svg: () => iceCup([['#f6c64a', 0.75]], { straw: '#e09a1a', label: '유자차', extra: '<circle cx="40" cy="88" r="7" fill="none" stroke="#e09a1a" stroke-width="2"/><circle cx="60" cy="104" r="6" fill="none" stroke="#e09a1a" stroke-width="2"/>' }) },
+  { id: 'dr-ade', w: 0.13, svg: () => iceCup([['#7ac7e8', 0.4], ['#bfe6f6', 0.38]], { straw: '#3b8fc4', label: '블루레몬에이드', extra: '<circle cx="64" cy="48" r="10" fill="#f6e06a" stroke="#e0b830" stroke-width="2"/><path d="M64 38 v20 M54 48 h20" stroke="#e0b830" stroke-width="1.5"/>' }) },
+  { id: 'dr-milktea', w: 0.13, svg: () => iceCup([['#3a2a20', 0.18], ['#c9a27a', 0.6]], { straw: '#8a5a3a', label: '흑당 밀크티', extra: '<g fill="#2a1d16">' + [[36, 122], [46, 126], [56, 124], [64, 120], [42, 116], [58, 114]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6"/>`).join('') + '</g>' }) },
+  { id: 'dr-mango', w: 0.13, svg: () => iceCup([['#f8a83a', 0.78]], { top: 'cream', straw: '#e07a1a', label: '망고 스무디', ice: false }) },
+  { id: 'dr-hot', w: 0.12, svg: () => hotCup('#f4efe6', '#8a5a3a', '따뜻한 라떼') },
+  { id: 'dr-hotchoco', w: 0.12, svg: () => hotCup('#f4efe6', '#5f8a4f', '핫초코') },
+  { id: 'dr-tea', w: 0.12, svg: () => K('0 0 120 100', '<path d="M48 18 c-6 -8 6 -10 0 -16 M66 18 c-6 -8 6 -10 0 -16" stroke="#b9b9c0" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M14 30 H96 Q96 86 55 88 Q14 86 14 30Z" fill="#fff" stroke="#c9c9cf" stroke-width="2"/><path d="M96 42 C114 42 114 66 92 66" stroke="#c9c9cf" stroke-width="5" fill="none"/><ellipse cx="55" cy="34" rx="38" ry="5" fill="#d9a85a"/><path d="M70 30 L80 6" stroke="#999" stroke-width="1.5"/><rect x="76" y="0" width="12" height="9" fill="#f2a6be"/>' + LBL(55, 66, '캐모마일', 11) + '<ellipse cx="55" cy="94" rx="44" ry="5" fill="#e9e9ee"/>') },
+  { id: 'dr-boba-text', w: 0.2, svg: () => K('0 0 160 50', `<rect x="2" y="6" width="156" height="38" rx="19" fill="#c9a27a"/>${LBL(80, 31, '오늘의 당 충전', 16, '#3a2a20')}`) },
+  { id: 'dr-coffee-text', w: 0.2, svg: () => K('0 0 160 50', `<rect x="2" y="6" width="156" height="38" rx="6" fill="#3b2418"/>${LBL(80, 31, '카페인 수혈 중', 16, '#f3e9d8')}`) },
+];
+
+// ---------- 과목 교과서 ----------
+function book(title, color, accent, icon, sub = '') {
+  return K('0 0 110 140', `<rect x="10" y="8" width="90" height="126" rx="4" fill="#fffdf8" stroke="#d9d4c8"/>
+    <rect x="6" y="6" width="90" height="126" rx="4" fill="${color}"/><rect x="6" y="6" width="12" height="126" rx="3" fill="#000" opacity=".12"/>
+    <rect x="22" y="18" width="66" height="34" rx="4" fill="#fff" opacity=".92"/>
+    <text x="55" y="${sub ? 36 : 41}" text-anchor="middle" font-family="'Black Han Sans', 'Do Hyeon', sans-serif" font-size="${title.length > 3 ? 15 : 19}" fill="${accent}">${esc(title)}</text>
+    ${sub ? `<text x="55" y="48" text-anchor="middle" font-family="'Gowun Dodum', sans-serif" font-size="8" fill="#666">${esc(sub)}</text>` : ''}
+    <g transform="translate(55 92)">${icon}</g>
+    <rect x="22" y="118" width="66" height="6" rx="3" fill="#fff" opacity=".5"/>`);
+}
+const W_ = '#fff';
+export const BOOK_STICKERS = [
+  { id: 'bk-korean', w: 0.12, svg: () => book('국어', '#e57373', '#c0392b', `<text y="12" text-anchor="middle" font-family="'Song Myung', serif" font-size="34" fill="${W_}">가</text>`) },
+  { id: 'bk-math', w: 0.12, svg: () => book('수학', '#5c9ce6', '#2f6fb6', `<text y="12" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="26" fill="${W_}">√x</text>`) },
+  { id: 'bk-english', w: 0.12, svg: () => book('영어', '#7cbf6b', '#3f7a35', `<text y="12" text-anchor="middle" font-family="'Abril Fatface', serif" font-size="30" fill="${W_}">Aa</text>`) },
+  { id: 'bk-science', w: 0.12, svg: () => book('과학', '#4fb0a5', '#2a7a72', `<path d="M-8 -18 V-4 L-18 16 H18 L8 -4 V-18 M-12 -18 H12" stroke="${W_}" stroke-width="3.5" fill="none" stroke-linejoin="round"/><circle cx="-4" cy="9" r="3" fill="${W_}"/><circle cx="5" cy="5" r="2" fill="${W_}"/>`) },
+  { id: 'bk-social', w: 0.12, svg: () => book('사회', '#f0a35e', '#b8681e', `<circle r="18" fill="none" stroke="${W_}" stroke-width="3"/><path d="M-18 0 H18 M0 -18 C-10 -6 -10 6 0 18 C10 6 10 -6 0 -18" stroke="${W_}" stroke-width="2.5" fill="none"/>`) },
+  { id: 'bk-history', w: 0.12, svg: () => book('한국사', '#a0785a', '#6b4a32', `<path d="M-20 14 H20 M-16 14 V-2 M16 14 V-2 M-22 -2 H22 L0 -18Z" stroke="${W_}" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M-6 14 V2 M6 14 V2" stroke="${W_}" stroke-width="3"/>`) },
+  { id: 'bk-ethics', w: 0.12, svg: () => book('도덕·윤리', '#8a7be0', '#5a4bb0', `<path d="M0 -18 V18 M-20 -8 H20 M-20 -8 L-26 6 H-14Z M20 -8 L14 6 H26Z" stroke="${W_}" stroke-width="2.6" fill="none" stroke-linejoin="round"/>`) },
+  { id: 'bk-art', w: 0.12, svg: () => book('미술', '#f48fb1', '#c2185b', `<path d="M0 -18 C16 -18 22 -6 18 4 C14 12 6 6 4 12 C2 18 -4 20 -10 16 C-22 8 -18 -18 0 -18Z" fill="${W_}"/><circle cx="-8" cy="-6" r="3" fill="#f48fb1"/><circle cx="4" cy="-10" r="3" fill="#5c9ce6"/><circle cx="10" cy="0" r="3" fill="#f6c64a"/>`) },
+  { id: 'bk-music', w: 0.12, svg: () => book('음악', '#ce93d8', '#8e24aa', `<path d="M-6 12 V-16 L14 -20 V8" stroke="${W_}" stroke-width="3" fill="none"/><ellipse cx="-11" cy="13" rx="6" ry="4.5" fill="${W_}"/><ellipse cx="9" cy="9" rx="6" ry="4.5" fill="${W_}"/>`) },
+  { id: 'bk-pe', w: 0.12, svg: () => book('체육', '#ff8a65', '#d84315', `<circle r="18" fill="none" stroke="${W_}" stroke-width="3"/><path d="M-18 0 Q0 -10 18 0 M-18 0 Q0 10 18 0 M0 -18 V18" stroke="${W_}" stroke-width="2" fill="none"/>`) },
+  { id: 'bk-info', w: 0.12, svg: () => book('정보', '#607d8b', '#37474f', `<rect x="-20" y="-16" width="40" height="26" rx="3" fill="none" stroke="${W_}" stroke-width="3"/><path d="M-26 16 H26 M-8 -6 L-13 -2 L-8 2 M8 -6 L13 -2 L8 2" stroke="${W_}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`) },
+  { id: 'bk-japanese', w: 0.12, svg: () => book('일본어', '#ef9a9a', '#c62828', `<text y="12" text-anchor="middle" font-family="sans-serif" font-size="32" fill="${W_}">あ</text>`) },
+  { id: 'bk-chinese', w: 0.12, svg: () => book('한문', '#bcaaa4', '#5d4037', `<text y="12" text-anchor="middle" font-family="serif" font-size="32" fill="${W_}">漢</text>`) },
+  { id: 'bk-accounting', w: 0.12, svg: () => book('회계', '#2f3f63', '#2f3f63', `<text y="10" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="16" fill="${W_}">차 | 대</text><path d="M-22 16 H22" stroke="${W_}" stroke-width="2"/>`, '재무회계·원가') },
+  { id: 'bk-tax', w: 0.12, svg: () => book('세법', '#5a6f9a', '#34466e', `<text y="12" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="30" fill="${W_}">%</text>`) },
+  { id: 'bk-law', w: 0.12, svg: () => book('법', '#7b6a58', '#4e3f30', `<path d="M-14 -10 L6 10 M-20 -4 L-8 -16 M0 4 L12 -8 M-4 18 H22" stroke="${W_}" stroke-width="4" stroke-linecap="round"/>`, '상법·민법') },
+  { id: 'bk-econ', w: 0.12, svg: () => book('경제', '#26a69a', '#00796b', `<path d="M-20 14 L-8 0 L2 8 L18 -12 M10 -12 H18 V-4" stroke="${W_}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`) },
+  { id: 'bk-cert', w: 0.12, svg: () => book('자격증', '#f6c64a', '#b8860b', `<rect x="-18" y="-14" width="36" height="26" rx="2" fill="none" stroke="${W_}" stroke-width="3"/><circle cx="8" cy="12" r="7" fill="${W_}"/><path d="M4 18 l-2 8 l6 -3 l6 3 l-2 -8" fill="${W_}"/>`) },
+  { id: 'bk-wrongnote', w: 0.12, svg: () => book('오답노트', '#e0e0e0', '#d32f2f', `<path d="M-14 -14 L14 14 M14 -14 L-14 14" stroke="#d32f2f" stroke-width="5" stroke-linecap="round"/>`) },
+  { id: 'bk-stack', w: 0.18, svg: () => K('0 0 140 110', ['#5c9ce6', '#e57373', '#7cbf6b', '#f0a35e'].map((c, i) => `<rect x="${12 + (i % 2) * 6}" y="${82 - i * 22}" width="${112 - (i % 2) * 10}" height="20" rx="3" fill="${c}"/><rect x="${18 + (i % 2) * 6}" y="${87 - i * 22}" width="${40}" height="10" rx="2" fill="#fff" opacity=".85"/>`).join('') + '<rect x="98" y="2" width="14" height="22" fill="#d32f2f"/><path d="M98 24 l7 -6 l7 6" fill="#fff"/>') },
+];

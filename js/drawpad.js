@@ -8,7 +8,7 @@ import { modal } from './ui.js';
 import { STICKERS, MOODS, WEATHERS, ALL_TAPES, stickerSvg, stickerDefaultW, tapeSvg, moodSvg, weatherSvg, STICKER_GROUPS, PAPERS, paperSvg, paperDefaultW } from './art.js';
 import { handFont, fontPicker } from './theme.js';
 import { recordSvg, timetableSvg, todoCardSvg, dateTextSvg, DATE_TEXT_STYLES } from './decor.js';
-import { collageSvg, DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS, DOODLE_STICKERS } from './art3.js';
+import { collageSvg, DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS, DOODLE_STICKERS, DRINK_STICKERS, BOOK_STICKERS } from './art3.js';
 
 const W = 900, H = 1200, S = 1.5; // 논리 좌표 900×1200, 실제 픽셀 1.5배
 export const PAPER_STYLES = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지'], ['kraft', '크라프트'], ['half', '반반'], ['torn', '찢은 노트'], ['news', '신문지'], ['manuscript', '원고지'], ['music', '오선지'], ['vintage', '빈티지'], ['pinkgrid', '핑크 모눈'], ['skygrid', '하늘 모눈'], ['gingham', '깅엄'], ['polka', '도트 무늬'], ['board', '칠판']];
@@ -345,7 +345,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
 
   // ---------- 패널 (스티커 / 테이프) ----------
   let stTab = '소품';
-  const ST_TABS = () => [['날짜', null], ['낙서', DOODLE_STICKERS], ['소품', STICKERS], ['Y2K', Y2K_STICKERS], ['패턴 말풍선', PATTERN_BUBBLES], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['라벨', LABEL_STICKERS], ['감정', null], ['날씨', null]];
+  const ST_TABS = () => [['날짜', null], ['낙서', DOODLE_STICKERS], ['음료', DRINK_STICKERS], ['교과서', BOOK_STICKERS], ['소품', STICKERS], ['Y2K', Y2K_STICKERS], ['패턴 말풍선', PATTERN_BUBBLES], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['라벨', LABEL_STICKERS], ['감정', null], ['날씨', null]];
   function renderPanel() {
     const box = host.querySelector('[data-panelbox]');
     box.hidden = !panel;
