@@ -1,8 +1,8 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = `archive-${VERSION}`;
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', './css/style.css',
+  './', './index.html', './manifest.webmanifest', './css/style.css', './css/kfonts.css',
   './js/app.js', './js/store.js', './js/util.js', './js/ui.js', './js/timers.js', './js/charts.js', './js/focus.js', './js/drawpad.js',
   './js/icons.js', './js/art.js', './js/art2.js', './js/art3.js', './js/decor.js', './js/theme.js', './js/quotes.js',
   './js/views/home.js', './js/views/memo.js', './js/views/timer.js', './js/views/todo.js', './js/views/dday.js',
@@ -31,7 +31,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   // 구글 폰트: 캐시 우선
-  if (/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) {
+  if (/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname) || url.hostname === 'cdn.jsdelivr.net') {
     e.respondWith(caches.match(req).then((r) => r || fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; })));
   }
 });

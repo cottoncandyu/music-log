@@ -17,7 +17,9 @@ export const THEMES = [
   { id: 'rose', name: '프린세스 로즈', desc: '장밋빛 핑크와 금색 장식', sw: ['#fbeff2', '#fffafb', '#cf7b95'] },
 ];
 
-// 모두 Google Fonts 제공 글꼴 (index.html에서 불러옴). 한글은 필요한 글자만 내려받아요.
+// 글꼴 출처
+// - Google Fonts (index.html): 한글은 필요한 글자만 내려받음
+// - npm 패키지(@kfonts/*, galmuri, pretendard) → jsDelivr CDN (css/kfonts.css): 모두 SIL OFL 1.1 표기, 처음 쓸 때만 내려받음
 // group: 손글씨 / 귀여운 / 디자인 / 고딕 / 명조 / 영문(한글은 옆에 적힌 한글 글꼴로 표시)
 export const HAND_FONTS = [
   { id: 'gaegu', name: '개구', css: 'Gaegu, cursive', scale: 1.1, group: '손글씨' },
@@ -58,6 +60,53 @@ export const HAND_FONTS = [
   { id: 'noto-serif', name: '노토 세리프', css: "'Noto Serif KR', serif", scale: 0.92, group: '명조' },
   { id: 'hahmlet', name: '함렛', css: 'Hahmlet, serif', scale: 0.92, group: '명조' },
   { id: 'song-myung', name: '송명', css: "'Song Myung', serif", scale: 0.98, group: '명조' },
+  { id: 'nh-sonpyeonjiche', name: '손편지체', css: "'나눔손글씨 손편지체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-ttobagttobag', name: '또박또박', css: "'나눔손글씨 또박또박', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-jalhago-iss-eo', name: '잘하고 있어', css: "'나눔손글씨 잘하고 있어', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-dasi-sijaghae', name: '다시 시작해', css: "'나눔손글씨 다시 시작해', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-kkochnae-eum', name: '꽃내음', css: "'나눔손글씨 꽃내음', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-jangmiche', name: '장미체', css: "'나눔손글씨 장미체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-gomsinche', name: '곰신체', css: "'나눔손글씨 곰신체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-kokoche', name: '코코체', css: "'나눔손글씨 코코체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-hyejunche', name: '혜준체', css: "'나눔손글씨 혜준체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-junghagsaeng', name: '중학생', css: "'나눔손글씨 중학생', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-chodinghuimang', name: '초딩희망', css: "'나눔손글씨 초딩희망', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-eommasalang', name: '엄마사랑', css: "'나눔손글씨 엄마사랑', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-agisalangche', name: '아기사랑체', css: "'나눔손글씨 아기사랑체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-baleunhipi', name: '바른히피', css: "'나눔손글씨 바른히피', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-seongsilche', name: '성실체', css: "'나눔손글씨 성실체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-somiche', name: '소미체', css: "'나눔손글씨 소미체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-yeonjiche', name: '연지체', css: "'나눔손글씨 연지체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-dahaengche', name: '다행체', css: "'나눔손글씨 다행체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-huimangnuli', name: '희망누리', css: "'나눔손글씨 희망누리', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-gangbujangnimche', name: '강부장님체', css: "'나눔손글씨 강부장님체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-ogbiche', name: '옥비체', css: "'나눔손글씨 옥비체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nh-magoche', name: '마고체', css: "'나눔손글씨 마고체', 'Gowun Dodum', sans-serif", scale: 1.3, group: '나눔손글씨' },
+  { id: 'nanum-barun-pen', name: '나눔바른펜', css: "'나눔바른펜', 'Gowun Dodum', sans-serif", scale: 1.0, group: '나눔손글씨' },
+  { id: 'bm-hanna-pro', name: '배민 한나 Pro', css: "'배달의민족 한나체 Pro', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'bm-hanna-air', name: '배민 한나 Air', css: "'배달의민족 한나체 Air', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'bm-hanna-11yrs', name: '배민 한나는 열한살', css: "'배달의민족 한나는 열한살', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'bm-euljiro', name: '배민 을지로체', css: "'배달의민족 을지로체 TTF', 'Gowun Dodum', sans-serif", scale: 0.95, group: '귀여운' },
+  { id: 'bm-euljiro-10years-later', name: '배민 을지로 10년후', css: "'배민 을지로10년후체', 'Gowun Dodum', sans-serif", scale: 0.95, group: '귀여운' },
+  { id: 'hakgyoansim-monggeulmonggeul', name: '학교안심 몽글몽글', css: "'학교안심 몽글몽글', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-bunpil', name: '학교안심 분필', css: "'학교안심 분필', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-ggooreogi', name: '학교안심 꾸러기', css: "'학교안심 꾸러기', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-gaeulsopung', name: '학교안심 가을소풍', css: "'학교안심 가을소풍', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-malgeunnal', name: '학교안심 맑은날', css: "'학교안심 맑은날', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-wooju', name: '학교안심 우주', css: "'학교안심 우주', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'hakgyoansim-dotbogi', name: '학교안심 돋보기', css: "'학교안심 돋보기', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'kcc-hanbit', name: 'KCC 한빛', css: "'KCC-한빛', 'Gowun Dodum', sans-serif", scale: 1.0, group: '귀여운' },
+  { id: 'neodgm', name: 'Neo둥근모', css: "'Neo둥근모', 'Gowun Dodum', sans-serif", scale: 1.0, group: '픽셀' },
+  { id: 'galmuri11', name: '갈무리11', css: "'Galmuri11', 'Gowun Dodum', sans-serif", scale: 1.0, group: '픽셀' },
+  { id: 'galmuri9', name: '갈무리9', css: "'Galmuri9', 'Gowun Dodum', sans-serif", scale: 1.0, group: '픽셀' },
+  { id: 'pretendard', name: '프리텐다드', css: "'Pretendard Variable', 'Gowun Dodum', sans-serif", scale: 0.92, group: '고딕' },
+  { id: 'nanum-square', name: '나눔스퀘어', css: "'나눔스퀘어', 'Gowun Dodum', sans-serif", scale: 0.92, group: '고딕' },
+  { id: 'nanum-square-round', name: '나눔스퀘어라운드', css: "'나눔스퀘어라운드', 'Gowun Dodum', sans-serif", scale: 0.92, group: '고딕' },
+  { id: 'nanum-barun-gothic', name: '나눔바른고딕', css: "'나눔바른고딕', 'Gowun Dodum', sans-serif", scale: 0.92, group: '고딕' },
+  { id: 'line-seed', name: 'LINE Seed', css: "'LINE Seed Sans KR', 'Gowun Dodum', sans-serif", scale: 0.92, group: '고딕' },
+  { id: 'maruburi', name: '마루부리', css: "'마루 부리', 'Gowun Dodum', sans-serif", scale: 0.92, group: '명조' },
+  { id: 'ridi-batang', name: '리디바탕', css: "'리디바탕', 'Gowun Dodum', sans-serif", scale: 0.92, group: '명조' },
+  { id: 'hakgyoansim-bareonbatang', name: '학교안심 바른바탕', css: "'학교안심 바른바탕', 'Gowun Dodum', sans-serif", scale: 0.92, group: '명조' },
   { id: 'caveat', name: 'Caveat', css: "'Caveat', 'Gaegu', sans-serif", scale: 1.2, group: '영문' },
   { id: 'pacifico', name: 'Pacifico', css: "'Pacifico', 'Gaegu', sans-serif", scale: 0.95, group: '영문' },
   { id: 'dancing', name: 'Dancing Script', css: "'Dancing Script', 'Gaegu', sans-serif", scale: 1.15, group: '영문' },
@@ -94,9 +143,9 @@ export const HAND_FONTS = [
   { id: 'bebas', name: 'Bebas Neue', css: "'Bebas Neue', 'Do Hyeon', sans-serif", scale: 1.2, group: '영문' },
   { id: 'archivo-black', name: 'Archivo Black', css: "'Archivo Black', 'Black Han Sans', sans-serif", scale: 0.9, group: '영문' },
 ];
-export const FONT_GROUPS = ['손글씨', '귀여운', '디자인', '고딕', '명조', '영문'];
+export const FONT_GROUPS = ['손글씨', '나눔손글씨', '귀여운', '픽셀', '디자인', '고딕', '명조', '영문'];
 // 앱 전체 글꼴로 쓰기 좋은(읽기 편한) 글꼴만
-const UI_IDS = ['system', 'noto-sans', 'gothic-a1', 'nanum-gothic', 'gowun-dodum', 'ibm-plex', 'sunflower', 'nanum-myeongjo', 'gowun-batang', 'noto-serif', 'hahmlet', 'jua', 'stylish', 'do-hyeon', 'orbit'];
+const UI_IDS = ['pretendard', 'nanum-square-round', 'nanum-square', 'nanum-barun-gothic', 'line-seed', 'maruburi', 'ridi-batang', 'system', 'noto-sans', 'gothic-a1', 'nanum-gothic', 'gowun-dodum', 'ibm-plex', 'sunflower', 'nanum-myeongjo', 'gowun-batang', 'noto-serif', 'hahmlet', 'jua', 'stylish', 'do-hyeon', 'orbit'];
 export const FONTS = HAND_FONTS.filter((f) => UI_IDS.includes(f.id)).map((f) => ({ ...f, name: f.id === 'system' ? '기본 (애플 고딕)' : f.name }));
 export const handFont = (id) => HAND_FONTS.find((f) => f.id === id) || HAND_FONTS[0];
 

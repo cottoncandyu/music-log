@@ -1,0 +1,67 @@
+/* 추가 한글 글꼴 — 모두 SIL Open Font License 1.1 (npm @kfonts/*, galmuri 패키지 표기 기준)
+   jsDelivr CDN에서 해당 글꼴을 처음 쓸 때만 내려받습니다. 패키지·버전은 js/theme.js 의 KFONT_SOURCES 참고 */
+@font-face { font-family: '나눔손글씨 손편지체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-sonpyeonjiche@0.2.0/sonpyeonjiche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 또박또박'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-ttobagttobag@0.2.0/ttobagttobag.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 잘하고 있어'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-jalhago-iss-eo@0.2.0/jalhago-iss-eo.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 다시 시작해'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-dasi-sijaghae@0.2.0/dasi-sijaghae.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 꽃내음'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-kkochnae-eum@0.2.0/kkochnae-eum.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 장미체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-jangmiche@0.2.0/jangmiche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 곰신체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-gomsinche@0.2.0/gomsinche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 코코체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-kokoche@0.2.0/kokoche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 혜준체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-hyejunche@0.2.0/hyejunche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 중학생'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-junghagsaeng@0.2.0/junghagsaeng.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 초딩희망'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-chodinghuimang@0.2.0/chodinghuimang.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 엄마사랑'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-eommasalang@0.2.0/eommasalang.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 아기사랑체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-agisalangche@0.2.0/agisalangche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 바른히피'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-baleunhipi@0.2.0/baleunhipi.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 성실체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-seongsilche@0.2.0/seongsilche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 소미체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-somiche@0.2.0/somiche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 연지체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-yeonjiche@0.2.0/yeonjiche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 다행체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-dahaengche@0.2.0/dahaengche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 희망누리'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-huimangnuli@0.2.0/huimangnuli.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 강부장님체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-gangbujangnimche@0.2.0/gangbujangnimche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 옥비체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-ogbiche@0.2.0/ogbiche.woff2') format('woff2'); }
+@font-face { font-family: '나눔손글씨 마고체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-handwritting-magoche@0.2.0/magoche.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른펜'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-pen@0.2.0/NanumBarunpenR.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른펜'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-pen@0.2.0/NanumBarunpenB.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어라운드'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-round@0.2.0/NanumSquareRoundR.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어라운드'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-round@0.2.0/NanumSquareRoundL.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어라운드'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-round@0.2.0/NanumSquareRoundB.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어라운드'; font-weight: 800; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square-round@0.2.0/NanumSquareRoundEB.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square@0.2.0/NanumSquareR.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square@0.2.0/NanumSquareL.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square@0.2.0/NanumSquareB.woff2') format('woff2'); }
+@font-face { font-family: '나눔스퀘어'; font-weight: 800; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-square@0.2.0/NanumSquareEB.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른고딕'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothic.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른고딕'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicBold.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른고딕'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicLight.woff2') format('woff2'); }
+@font-face { font-family: '나눔바른고딕'; font-weight: 200; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic@0.3.0/NanumBarunGothicUltraLight.woff2') format('woff2'); }
+@font-face { font-family: 'LINE Seed Sans KR'; font-weight: 200; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/LINESeedKR-Th.woff2') format('woff2'); }
+@font-face { font-family: 'LINE Seed Sans KR'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/LINESeedKR-Rg.woff2') format('woff2'); }
+@font-face { font-family: 'LINE Seed Sans KR'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/LINESeedKR-Bd.woff2') format('woff2'); }
+@font-face { font-family: '마루 부리'; font-weight: 200; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/MaruBuri-ExtraLight.woff2') format('woff2'); }
+@font-face { font-family: '마루 부리'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/MaruBuri-Light.woff2') format('woff2'); }
+@font-face { font-family: '마루 부리'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/MaruBuri-Regular.woff2') format('woff2'); }
+@font-face { font-family: '마루 부리'; font-weight: 600; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/MaruBuri-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: '마루 부리'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/MaruBuri-Bold.woff2') format('woff2'); }
+@font-face { font-family: '리디바탕'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/ridi-batang@0.2.0/RIDIBatang.woff2') format('woff2'); }
+@font-face { font-family: 'Neo둥근모'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/neodgm@0.5.0/neodgm.woff2') format('woff2'); }
+@font-face { font-family: 'KCC-한빛'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/kcc-hanbit@0.1.0/KCC-Hanbit.woff2') format('woff2'); }
+@font-face { font-family: '배달의민족 한나체 Pro'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/bm-hanna-pro@0.2.0/BMHANNAPro.woff2') format('woff2'); }
+@font-face { font-family: '배달의민족 한나체 Air'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/bm-hanna-air@0.2.0/BMHANNAAir_ttf.woff2') format('woff2'); }
+@font-face { font-family: '배달의민족 한나는 열한살'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/bm-hanna-11yrs@0.2.1/BMHANNA_11yrs_ttf.woff2') format('woff2'); }
+@font-face { font-family: '배달의민족 을지로체 TTF'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/bm-euljiro@0.2.1/BMEULJIROTTF.woff2') format('woff2'); }
+@font-face { font-family: '배민 을지로10년후체'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/bm-euljiro-10years-later@0.2.1/BMEuljiro10yearslater.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 몽글몽글'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-monggeulmonggeul@0.1.0/HakgyoansimMonggeulmonggeulR.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 분필'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-bunpil@0.1.0/HakgyoansimBunpilR.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 꾸러기'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-ggooreogi@0.1.0/HakgyoansimGgooreogiR.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 가을소풍'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-gaeulsopung@0.1.0/HakgyoansimGaeulsopungL.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 가을소풍'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-gaeulsopung@0.1.0/HakgyoansimGaeulsopungB.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 맑은날'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-malgeunnal@0.1.0/HakgyoansimMalgeunnalB.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 맑은날'; font-weight: 500; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-malgeunnal@0.1.0/HakgyoansimMalgeunnalM.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 우주'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-wooju@0.1.0/HakgyoansimWoojuR.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 바른바탕'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-bareonbatang@0.1.0/HakgyoansimBareonbatangR.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 바른바탕'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-bareonbatang@0.1.0/HakgyoansimBareonbatangB.woff2') format('woff2'); }
+@font-face { font-family: '학교안심 돋보기'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/@kfonts/hakgyoansim-dotbogi@0.1.0/HakgyoansimDotbogiR.woff2') format('woff2'); }
+@font-face { font-family: 'Galmuri11'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri11.woff2') format('woff2'); }
+@font-face { font-family: 'Galmuri9'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/Galmuri9.woff2') format('woff2'); }
