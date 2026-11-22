@@ -46,11 +46,21 @@ export const studyRunning = () => !!(state.run.study && state.run.study.running)
 export const defaultSubject = () =>
   (state.subjects.some((s) => s.name === state.profile.lastSubject) ? state.profile.lastSubject : state.subjects[0]?.name) || '기타';
 
+// 공부 종류: 순공(혼자 공부) / 인강 / 학원·수업 — 순공 시간을 따로 집계
+export const STUDY_MODES = { self: '순공', lecture: '인강', class: '학원·수업' };
+export const modeOf = (s) => (s && s.mode) || 'self';
+export const defaultMode = () => (STUDY_MODES[state.profile.lastMode] ? state.profile.lastMode : 'self');
+export function studySetMode(mode) {
+  state.profile.lastMode = mode;
+  if (state.run.study) state.run.study.mode = mode;
+  save();
+}
+
 export function studyStart(subject) {
   unlockAudio();
   const now = Date.now();
   const s = state.run.study;
-  if (!s) state.run.study = { subject: subject || defaultSubject(), firstStart: now, acc: 0, running: true, since: now };
+  if (!s) state.run.study = { subject: subject || defaultSubject(), mode: defaultMode(), firstStart: now, acc: 0, running: true, since: now };
   else if (!s.running) { s.running = true; s.since = now; if (subject) s.subject = subject; }
   save();
 }
@@ -69,7 +79,7 @@ export function studyStop() {
   if (!s) return 0;
   const sec = Math.round(studyElapsed());
   if (sec >= 10) {
-    state.sessions.push({ id: uid(), subject: s.subject, start: s.firstStart, sec, date: ymd(new Date(s.firstStart)), kind: 'timer' });
+    state.sessions.push({ id: uid(), subject: s.subject, start: s.firstStart, sec, date: ymd(new Date(s.firstStart)), kind: 'timer', mode: modeOf(s) });
   }
   state.profile.lastSubject = s.subject;
   state.run.study = null;
@@ -126,7 +136,7 @@ function advance(completed) {
     if (completed) {
       const sec = phaseLen('focus');
       const start = p.endsAt - sec * 1000;
-      state.sessions.push({ id: uid(), subject: p.subject, start, sec, date: ymd(new Date(start)), kind: 'pomo' });
+      state.sessions.push({ id: uid(), subject: p.subject, start, sec, date: ymd(new Date(start)), kind: 'pomo', mode: 'self' });
       p.count++;
     }
     next = completed && p.count % state.pomoCfg.every === 0 ? 'long' : 'short';
@@ -147,13 +157,15 @@ export function tick() {
 }
 
 // ---------- 집계 ----------
-export function secOnDate(date, subject) {
+/** 날짜별 공부 시간. mode를 주면 그 종류만 (예: 'self' = 순공) */
+export function secOnDate(date, subject, mode) {
   let sum = 0;
-  for (const s of state.sessions) if (s.date === date && (!subject || s.subject === subject)) sum += s.sec;
+  for (const s of state.sessions) if (s.date === date && (!subject || s.subject === subject) && (!mode || modeOf(s) === mode)) sum += s.sec;
   const r = state.run.study;
-  if (r && ymd(new Date(r.firstStart)) === date && (!subject || r.subject === subject)) sum += studyElapsed();
+  if (r && ymd(new Date(r.firstStart)) === date && (!subject || r.subject === subject) && (!mode || modeOf(r) === mode)) sum += studyElapsed();
   return sum;
 }
+export const selfSecOnDate = (date) => secOnDate(date, null, 'self');
 export function sessionsBetween(from, to) {
   return state.sessions.filter((s) => s.date >= from && s.date <= to);
 }

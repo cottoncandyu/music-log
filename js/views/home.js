@@ -164,9 +164,10 @@ const W = {
       : link('#/dday', head('calendar', '디데이') + '<div class="muted small">시험·목표 날짜를 추가해보세요</div>');
   },
   study() {
-    const goalSec = state.profile.goalMinutes * 60, sec = T.secOnDate(today());
-    return `<div class="card widget">${head('timer', '오늘 공부', `목표 ${fmtDur(goalSec)}`)}
+    const goalSec = state.profile.goalMinutes * 60, sec = T.selfSecOnDate(today()), all = T.secOnDate(today());
+    return `<div class="card widget">${head('timer', '오늘 순공', `목표 ${fmtDur(goalSec)}`)}
       <div class="big-time" data-study>${fmtClock(sec)}</div>
+      <div class="tiny muted" data-studyall>${all > sec ? `학원·인강 포함 ${fmtDur(all)}` : ''}</div>
       <div class="progress mt ${sec >= goalSec ? 'good' : ''}"><i data-goalbar style="width:${Math.min(100, (sec / goalSec) * 100)}%"></i></div>
       <div class="row mt"><button class="btn primary" data-act="study">${T.studyRunning() ? icon('pause', 16) + ' 일시정지' : icon('play', 16) + ' 시작'}</button>
         ${state.run.study ? `<button class="btn" data-act="stop">${icon('stop', 16)} 저장</button>` : ''}
@@ -277,8 +278,9 @@ export default {
     tickFn = () => {
       const s = el.querySelector('[data-study]');
       if (s) {
-        const sec = T.secOnDate(today());
+        const sec = T.selfSecOnDate(today()), all = T.secOnDate(today());
         s.textContent = fmtClock(sec);
+        const sa = el.querySelector('[data-studyall]'); if (sa) sa.textContent = all > sec ? `학원·인강 포함 ${fmtDur(all)}` : '';
         el.querySelector('[data-goalbar]').style.width = `${Math.min(100, (sec / (state.profile.goalMinutes * 60)) * 100)}%`;
       }
       const p = el.querySelector('[data-pomo]'); if (p) p.textContent = fmtMS(T.pomoRemaining());

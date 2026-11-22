@@ -95,6 +95,39 @@
 }
 :root[data-theme="kraft"] .card { background-image: var(--texture); }
 
+/* 11. 시네마 나이트 (항상 어두운 화면) */
+:root[data-theme="cinema"] {
+  --bg: #0f0f10; --surface: #1c1c1e; --surface2: #2a2a2d; --text: #f3f3f3; --muted: #9a9aa0; --line: #2f2f33;
+  --accent: #e1251b; --accent-ink: #ffffff; --accent-soft: #3a1513;
+  --board: #2a2321; --board-dot: #3a302c; --paper: #232325; --paper-line: #343438; --paper-sheet: #fffdf8;
+  --shadow: 0 4px 18px rgba(0,0,0,.5); --radius: 6px; --font-head: 'Bebas Neue', 'Do Hyeon', sans-serif; --texture: none; color-scheme: dark;
+  --good: #46d369; --bad: #ff5a52;
+}
+:root[data-theme="cinema"] #title, :root[data-theme="cinema"] .nav-brand { letter-spacing: .12em; color: var(--accent); }
+:root[data-theme="cinema"] .card h3 { letter-spacing: .02em; }
+/* 12. 매직 캐슬 — 밤하늘 남색 바탕 + 크림 카드 + 금빛 별 */
+:root[data-theme="castle"] {
+  --bg: #1d2150; --surface: #f7f4ea; --surface2: #ebe6d6; --text: #262a4a; --muted: #7a7c94; --line: #dcd5bf;
+  --accent: #3b46a6; --accent-ink: #ffffff; --accent-soft: #e2e3f6;
+  --board: #2c3170; --board-dot: #3b4190; --paper: #fbf9f2; --paper-line: #e6e0cc; --paper-sheet: #fdfbf4;
+  --shadow: 0 4px 16px rgba(10, 12, 40, .35); --radius: 16px; --font-head: 'Playfair Display', 'Noto Serif KR', serif;
+  --texture: radial-gradient(1.2px 1.2px at 20% 30%, #f3d98a 50%, transparent 51%) 0 0 / 90px 90px, radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent 51%) 0 0 / 70px 70px, radial-gradient(1.6px 1.6px at 40% 80%, #d9b45a 50%, transparent 51%) 0 0 / 130px 130px;
+}
+:root[data-theme="castle"] #topbar { background: color-mix(in srgb, #1d2150 88%, transparent); }
+:root[data-theme="castle"] #title, :root[data-theme="castle"] .hello, :root[data-theme="castle"] .date-nav .label, :root[data-theme="castle"] main > .row .muted, :root[data-theme="castle"] main > .muted { color: #f7f4ea; }
+:root[data-theme="castle"] #nav { background: #f7f4ea; }
+:root[data-theme="castle"] .card { border-color: #d9b45a66; }
+:root[data-theme="castle"] .card h3 .ic { color: #b8902f; }
+/* 13. 프린세스 로즈 */
+:root[data-theme="rose"] {
+  --bg: #fbeff2; --surface: #fffafb; --surface2: #f8e6eb; --text: #4a2f38; --muted: #a58894; --line: #f1d9e0;
+  --accent: #cf7b95; --accent-ink: #ffffff; --accent-soft: #fbe1e9;
+  --board: #f2d3dc; --board-dot: #e9c0cc; --paper: #fffafb; --paper-line: #f4dde3; --paper-sheet: #fffbfc;
+  --shadow: 0 2px 0 #f0d6dd, 0 6px 18px rgba(207, 123, 149, .14); --radius: 20px; --font-head: 'DM Serif Display', 'Song Myung', serif;
+  --texture: radial-gradient(#f2d6a6 1px, transparent 1.4px) 0 0 / 26px 26px;
+}
+:root[data-theme="rose"] .card { border-color: #ecc9a1; }
+
 /* 다크 모드 (모든 테마 공통 바탕 + 테마별 강조색) */
 :root[data-dark] {
   --bg: #1b1a18; --surface: #252320; --surface2: #302d29; --text: #ece7de; --muted: #a39b8f; --line: #3a3631;
@@ -113,6 +146,9 @@
 :root[data-dark][data-theme="butter"] { --accent: #6fbdb7; --accent-soft: #24393a; }
 :root[data-dark][data-theme="kraft"] { --accent: #c9a483; --accent-soft: #3d3128; }
 :root[data-dark][data-theme="navy"] { --accent: #9fb0d8; --accent-soft: #283048; }
+:root[data-dark][data-theme="cinema"] { --accent: #e1251b; --accent-ink: #fff; --accent-soft: #3a1513; --bg: #0f0f10; --surface: #1c1c1e; }
+:root[data-dark][data-theme="castle"] { --accent: #d9b45a; --accent-soft: #3a3550; --bg: #12153a; }
+:root[data-dark][data-theme="rose"] { --accent: #e59ab1; --accent-soft: #4a2f38; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -712,3 +748,39 @@ a.card.dday-hero, .card.dday-hero { color: var(--accent-ink); }
 .tag.sync-ok { background: color-mix(in srgb, var(--good) 18%, var(--surface)); color: var(--good); }
 .tag.sync-syncing { background: var(--accent-soft); color: var(--accent); }
 .tag.sync-error, .tag.sync-offline { background: color-mix(in srgb, var(--bad) 15%, var(--surface)); color: var(--bad); }
+.mode-chips { margin-top: 6px; }
+.tag.mode-class { background: #e9dff5; color: #6b4f9a; } .tag.mode-lecture { background: #dfeaf7; color: #3f6a9a; } .tag.mode-self { background: #e2efdf; color: #4f7a45; }
+.stats.split { gap: 16px; } .stats.split .stat b { font-size: 18px; }
+
+/* ===== v4: 메모 사진·숨기기·자유 메모 ===== */
+.note-photo { display: block; width: 100%; height: 110px; object-fit: cover; margin: -6px 0 6px; box-shadow: 0 1px 3px rgba(0,0,0,.2); pointer-events: none; }
+.note-photo-lg { display: block; width: 100%; max-height: 50dvh; object-fit: contain; margin-bottom: 12px; border-radius: 4px; }
+.deck-pick { margin-bottom: 6px; }
+.free-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.free-card { position: relative; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; min-height: 150px; box-shadow: var(--shadow); color: #3a3530; overflow: hidden; }
+.free-card img { width: calc(100% + 28px); margin: -14px -14px 4px; height: 120px; object-fit: cover; }
+.free-card .pin { position: absolute; top: 8px; right: 8px; color: #e0a83a; z-index: 1; }
+.free-card .muted { color: #8a8278; }
+.free-title { font-size: 22px !important; font-weight: 700; border: 0 !important; border-bottom: 2px solid var(--line) !important; border-radius: 0 !important; background: transparent !important; padding-left: 2px !important; }
+@media (min-width: 1100px) { .free-editor { grid-template-columns: minmax(280px, 360px) 1fr; } }
+
+/* ===== v4: 다이어리 꾸미기 확장 ===== */
+.rec-preview { max-width: 260px; margin: 10px auto 0; }
+.rec-preview svg { width: 100%; height: auto; display: block; }
+.pshape { display: block; width: 100%; height: auto; overflow: visible; }
+.pframe2 img { display: block; width: 100%; height: auto; pointer-events: none; }
+.pframe2.fr-polaroid { background: #fff; padding: 4% 4% 14%; box-shadow: 0 3px 10px rgba(0,0,0,.18); }
+.pframe2.fr-cutout img { border: 0.9cqw solid #fff; border-radius: 3cqw; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.pframe2.fr-rounded img { border-radius: 2.4cqw; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.pframe2.fr-stamp { background: #fff; padding: 5%; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 60%, transparent 62%) -4px -4px / 9px 9px, linear-gradient(#000, #000) center / calc(100% - 9px) calc(100% - 9px) no-repeat;
+  mask: radial-gradient(circle at 50% 50%, #000 60%, transparent 62%) -4px -4px / 9px 9px, linear-gradient(#000, #000) center / calc(100% - 9px) calc(100% - 9px) no-repeat; }
+.pframe2.fr-film { background: #1d1d1f; padding: 12% 4%; position: relative; }
+.pframe2.fr-film::before, .pframe2.fr-film::after { content: ""; position: absolute; left: 3%; right: 3%; height: 5%; background: repeating-linear-gradient(90deg, #f3f0ea 0 6%, transparent 6% 12%); }
+.pframe2.fr-film::before { top: 3.5%; } .pframe2.fr-film::after { bottom: 3.5%; }
+.frame-chips { width: 100%; }
+.st-grid.wide { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+:root[data-theme="castle"] main > p, :root[data-theme="castle"] main > p a { color: #cfd2ee !important; }
+.free-editor .sw, .card .row > .sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); padding: 0; flex: 0 0 auto; }
+.free-editor .sw.on, .card .row > .sw.on { box-shadow: 0 0 0 2px var(--text); }
+:root[data-theme="castle"] .hello .muted { color: #c9cbe6; }

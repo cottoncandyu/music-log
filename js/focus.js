@@ -38,7 +38,7 @@ export function openFocus(mode = 'study') {
     if (mode === 'study') {
       const r = state.run.study;
       $('[data-clock]').textContent = fmtClock(T.studyElapsed());
-      $('[data-label]').textContent = `${r ? r.subject : '대기 중'} · 오늘 총 ${fmtDur(T.secOnDate(today()))}${r && !r.running ? ' · 일시정지' : ''}`;
+      $('[data-label]').textContent = `${r ? `${r.subject} · ${T.STUDY_MODES[T.modeOf(r)]}` : '대기 중'} · 오늘 순공 ${fmtDur(T.selfSecOnDate(today()))}${r && !r.running ? ' · 일시정지' : ''}`;
     } else {
       const p = T.pomo();
       const rem = T.pomoRemaining();

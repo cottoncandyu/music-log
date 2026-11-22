@@ -12,10 +12,13 @@ export const THEMES = [
   { id: 'butter', name: '버터 크림', desc: '따뜻한 크림·청록 포인트', sw: ['#f7f3e3', '#fffdf4', '#3f8a86'] },
   { id: 'kraft', name: '크라프트', desc: '갈색 종이·빈티지 다이어리', sw: ['#e6dccb', '#f4eee2', '#8b6a4f'] },
   { id: 'navy', name: '네이비 클래식', desc: '남색과 아이보리, 단정하게', sw: ['#eceae4', '#faf9f5', '#2f3f63'] },
+  { id: 'cinema', name: '시네마 나이트', desc: '영화관처럼 까만 화면과 레드 포인트', sw: ['#111111', '#1e1e1e', '#e1251b'] },
+  { id: 'castle', name: '매직 캐슬', desc: '동화 속 성처럼 로열 블루와 금빛 별', sw: ['#1d2150', '#f7f4ea', '#d9b45a'] },
+  { id: 'rose', name: '프린세스 로즈', desc: '장밋빛 핑크와 금색 장식', sw: ['#fbeff2', '#fffafb', '#cf7b95'] },
 ];
 
 // 모두 Google Fonts 제공 글꼴 (index.html에서 불러옴). 한글은 필요한 글자만 내려받아요.
-// group: 손글씨 / 귀여운 / 디자인 / 고딕 / 명조
+// group: 손글씨 / 귀여운 / 디자인 / 고딕 / 명조 / 영문(한글은 옆에 적힌 한글 글꼴로 표시)
 export const HAND_FONTS = [
   { id: 'gaegu', name: '개구', css: 'Gaegu, cursive', scale: 1.1, group: '손글씨' },
   { id: 'nanum-pen', name: '나눔손글씨 펜', css: "'Nanum Pen Script', cursive", scale: 1.35, group: '손글씨' },
@@ -55,8 +58,43 @@ export const HAND_FONTS = [
   { id: 'noto-serif', name: '노토 세리프', css: "'Noto Serif KR', serif", scale: 0.92, group: '명조' },
   { id: 'hahmlet', name: '함렛', css: 'Hahmlet, serif', scale: 0.92, group: '명조' },
   { id: 'song-myung', name: '송명', css: "'Song Myung', serif", scale: 0.98, group: '명조' },
+  { id: 'caveat', name: 'Caveat', css: "'Caveat', 'Gaegu', sans-serif", scale: 1.2, group: '영문' },
+  { id: 'pacifico', name: 'Pacifico', css: "'Pacifico', 'Gaegu', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'dancing', name: 'Dancing Script', css: "'Dancing Script', 'Gaegu', sans-serif", scale: 1.15, group: '영문' },
+  { id: 'marker', name: 'Permanent Marker', css: "'Permanent Marker', 'Jua', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'shadows', name: 'Shadows Into Light', css: "'Shadows Into Light', 'Gaegu', sans-serif", scale: 1.15, group: '영문' },
+  { id: 'amatic', name: 'Amatic SC', css: "'Amatic SC', 'Gaegu', sans-serif", scale: 1.35, group: '영문' },
+  { id: 'elite', name: 'Special Elite', css: "'Special Elite', 'Nanum Gothic Coding', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'courier', name: 'Courier Prime', css: "'Courier Prime', 'Nanum Gothic Coding', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'lobster', name: 'Lobster', css: "'Lobster', 'Jua', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'fredoka', name: 'Fredoka', css: "'Fredoka', 'Jua', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'righteous', name: 'Righteous', css: "'Righteous', 'Do Hyeon', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'pixel', name: 'Press Start 2P', css: "'Press Start 2P', 'Dongle', sans-serif", scale: 0.65, group: '영문' },
+  { id: 'sacramento', name: 'Sacramento', css: "'Sacramento', 'Gaegu', sans-serif", scale: 1.5, group: '영문' },
+  { id: 'homemade', name: 'Homemade Apple', css: "'Homemade Apple', 'Nanum Pen Script', sans-serif", scale: 0.85, group: '영문' },
+  { id: 'rubik-mono', name: 'Rubik Mono One', css: "'Rubik Mono One', 'Black Han Sans', sans-serif", scale: 0.8, group: '영문' },
+  { id: 'dm-serif', name: 'DM Serif Display', css: "'DM Serif Display', 'Song Myung', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'gloria', name: 'Gloria Hallelujah', css: "'Gloria Hallelujah', 'Gaegu', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'patrick', name: 'Patrick Hand', css: "'Patrick Hand', 'Gaegu', sans-serif", scale: 1.1, group: '영문' },
+  { id: 'kalam', name: 'Kalam', css: "'Kalam', 'Gaegu', sans-serif", scale: 1.05, group: '영문' },
+  { id: 'monoton', name: 'Monoton', css: "'Monoton', 'Black Han Sans', sans-serif", scale: 0.9, group: '영문' },
+  { id: 'bungee', name: 'Bungee', css: "'Bungee', 'Black Han Sans', sans-serif", scale: 0.85, group: '영문' },
+  { id: 'cherry-bomb', name: 'Cherry Bomb One', css: "'Cherry Bomb One', 'Jua', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'rock-salt', name: 'Rock Salt', css: "'Rock Salt', 'Nanum Brush Script', sans-serif", scale: 0.8, group: '영문' },
+  { id: 'great-vibes', name: 'Great Vibes', css: "'Great Vibes', 'Nanum Pen Script', sans-serif", scale: 1.4, group: '영문' },
+  { id: 'indie', name: 'Indie Flower', css: "'Indie Flower', 'Gaegu', sans-serif", scale: 1.1, group: '영문' },
+  { id: 'satisfy', name: 'Satisfy', css: "'Satisfy', 'Gaegu', sans-serif", scale: 1.15, group: '영문' },
+  { id: 'alfa-slab', name: 'Alfa Slab One', css: "'Alfa Slab One', 'Black Han Sans', sans-serif", scale: 0.9, group: '영문' },
+  { id: 'anton', name: 'Anton', css: "'Anton', 'Do Hyeon', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'comfortaa', name: 'Comfortaa', css: "'Comfortaa', 'Gowun Dodum', sans-serif", scale: 0.95, group: '영문' },
+  { id: 'reenie', name: 'Reenie Beanie', css: "'Reenie Beanie', 'Nanum Pen Script', sans-serif", scale: 1.5, group: '영문' },
+  { id: 'nothing-you', name: 'Nothing You Could Do', css: "'Nothing You Could Do', 'Nanum Pen Script', sans-serif", scale: 0.9, group: '영문' },
+  { id: 'abril', name: 'Abril Fatface', css: "'Abril Fatface', 'Song Myung', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'playfair', name: 'Playfair Display', css: "'Playfair Display', 'Noto Serif KR', sans-serif", scale: 1.0, group: '영문' },
+  { id: 'bebas', name: 'Bebas Neue', css: "'Bebas Neue', 'Do Hyeon', sans-serif", scale: 1.2, group: '영문' },
+  { id: 'archivo-black', name: 'Archivo Black', css: "'Archivo Black', 'Black Han Sans', sans-serif", scale: 0.9, group: '영문' },
 ];
-export const FONT_GROUPS = ['손글씨', '귀여운', '디자인', '고딕', '명조'];
+export const FONT_GROUPS = ['손글씨', '귀여운', '디자인', '고딕', '명조', '영문'];
 // 앱 전체 글꼴로 쓰기 좋은(읽기 편한) 글꼴만
 const UI_IDS = ['system', 'noto-sans', 'gothic-a1', 'nanum-gothic', 'gowun-dodum', 'ibm-plex', 'sunflower', 'nanum-myeongjo', 'gowun-batang', 'noto-serif', 'hahmlet', 'jua', 'stylish', 'do-hyeon', 'orbit'];
 export const FONTS = HAND_FONTS.filter((f) => UI_IDS.includes(f.id)).map((f) => ({ ...f, name: f.id === 'system' ? '기본 (애플 고딕)' : f.name }));

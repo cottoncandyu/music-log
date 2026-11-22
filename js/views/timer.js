@@ -11,6 +11,14 @@ let statMode = 'week';
 let anchor = today();
 let selDay = today();
 let tickFn = null;
+let statKind = 'self'; // 통계: 'self' 순공만 | 'all' 학원·인강 포함
+const secFor = (d) => (statKind === 'self' ? T.selfSecOnDate(d) : T.secOnDate(d));
+const modeChips = (cur) => `<div class="chips mode-chips">${Object.entries(T.STUDY_MODES).map(([k, l]) => `<button class="chip ${k === cur ? 'on' : ''}" data-mode-pick="${k}">${l}</button>`).join('')}</div>`;
+const modeTag = (s) => `<span class="tag mode-${T.modeOf(s)}">${T.STUDY_MODES[T.modeOf(s)]}</span>`;
+function todaySplit(d) {
+  const self = T.selfSecOnDate(d), lec = T.secOnDate(d, null, 'lecture'), cls = T.secOnDate(d, null, 'class');
+  return `<div class="stats split"><div class="stat"><b data-self>${fmtDur(self)}</b><span>순공</span></div><div class="stat"><b>${fmtDur(lec)}</b><span>인강</span></div><div class="stat"><b>${fmtDur(cls)}</b><span>학원·수업</span></div><div class="stat"><b data-today>${fmtDur(self + lec + cls)}</b><span>합계</span></div></div>`;
+}
 
 const subjectChips = (cur, attr = 'subj') =>
   `<div class="chips">${state.subjects.map((s) => `<button class="chip ${s.name === cur ? 'on' : ''}" data-${attr}="${esc(s.name)}"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}</button>`).join('')}</div>`;
@@ -30,7 +38,7 @@ function sessionList(date) {
   return `<ul class="list">${list.map((s) => {
     const d = new Date(s.start);
     return `<li><span class="dot" style="background:${subjectColor(s.subject)}"></span>
-      <span class="txt" style="flex:1">${esc(s.subject)} <span class="tag">${s.kind === 'pomo' ? '뽀모도로' : s.kind === 'manual' ? '직접 입력' : '타이머'}</span></span>
+      <span class="txt" style="flex:1">${esc(s.subject)} ${modeTag(s)} <span class="tag">${s.kind === 'pomo' ? '뽀모도로' : s.kind === 'manual' ? '직접 입력' : '타이머'}</span></span>
       <span class="muted small num">${pad(d.getHours())}:${pad(d.getMinutes())}</span><b class="num">${fmtDur(s.sec)}</b>
       <button class="icon-btn" data-del-session="${s.id}" aria-label="삭제">${icon('trash', 16)}</button></li>`;
   }).join('')}</ul>`;
@@ -40,7 +48,8 @@ function addManual(after) {
   modal(`<h2>공부 시간 직접 입력<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <form class="form">
       <label class="field"><span>날짜</span><input type="date" name="date" value="${selDay}" max="${today()}" required></label>
-      <label class="field"><span>과목</span><select name="subject">${state.subjects.map((s) => `<option>${esc(s.name)}</option>`).join('')}</select></label>
+      <div class="row"><label class="field"><span>과목</span><select name="subject">${state.subjects.map((s) => `<option>${esc(s.name)}</option>`).join('')}</select></label>
+        <label class="field"><span>종류</span><select name="mode">${Object.entries(T.STUDY_MODES).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label></div>
       <div class="row"><label class="field"><span>시간</span><input type="number" name="h" min="0" max="23" value="1"></label>
       <label class="field"><span>분</span><input type="number" name="m" min="0" max="59" value="0"></label></div>
       <div class="actions"><button type="button" class="btn" data-close>취소</button><button class="btn primary">추가</button></div>
@@ -52,7 +61,7 @@ function addManual(after) {
         const sec = (Number(f.h.value) || 0) * 3600 + (Number(f.m.value) || 0) * 60;
         if (sec <= 0) return toast('시간을 입력해주세요');
         const start = parseYmd(f.date.value); start.setHours(12);
-        state.sessions.push({ id: uid(), subject: f.subject.value, start: start.getTime(), sec, date: f.date.value, kind: 'manual' });
+        state.sessions.push({ id: uid(), subject: f.subject.value, start: start.getTime(), sec, date: f.date.value, kind: 'manual', mode: f.mode.value });
         save(); close(); after();
       };
     },
@@ -66,8 +75,9 @@ function renderStudy() {
   return `<div class="grid two">
     <div class="card">
       <h3>과목 선택</h3>${subjectChips(cur)}
+      <div class="small muted mt">공부 종류 <span class="tiny">— 학원·인강 시간은 순공과 따로 집계돼요</span></div>${modeChips(r ? T.modeOf(r) : T.defaultMode())}
       <div class="timer-face"><div class="clock" data-clock>${fmtClock(T.studyElapsed())}</div>
-        <div class="sub">${r ? (r.running ? '공부 중… ' : '일시정지') : '시작 버튼을 눌러주세요'}</div></div>
+        <div class="sub">${r ? `${T.STUDY_MODES[T.modeOf(r)]} · ${r.running ? '공부 중…' : '일시정지'}` : '시작 버튼을 눌러주세요'}</div></div>
       <div class="row" style="justify-content:center">
         <button class="btn lg primary" data-act="toggle">${T.studyRunning() ? icon('pause', 18) + ' 일시정지' : r ? icon('play', 18) + ' 계속' : icon('play', 18) + ' 시작'}</button>
         ${r ? `<button class="btn lg" data-act="stop">${icon('stop', 18)} 종료·저장</button>` : ''}
@@ -76,8 +86,9 @@ function renderStudy() {
       <p class="tiny muted center mt">집중 화면은 화면이 꺼지지 않게 유지돼요. 아이패드를 세워두고 공부해보세요.</p>
     </div>
     <div class="card">
-      <h3>오늘 <span class="right num" data-today>${fmtDur(T.secOnDate(t))}</span></h3>
-      <div class="progress mb"><i style="width:${Math.min(100, (T.secOnDate(t) / (state.profile.goalMinutes * 60)) * 100)}%"></i></div>
+      <h3>오늘 <span class="right tiny muted">순공 목표 ${fmtDur(state.profile.goalMinutes * 60)}</span></h3>
+      ${todaySplit(t)}
+      <div class="progress mb mt"><i data-goalp style="width:${Math.min(100, (T.selfSecOnDate(t) / (state.profile.goalMinutes * 60)) * 100)}%"></i></div>
       ${subjectLegend(state.sessions.filter((s) => s.date === t))}
       <hr>${sessionList(t)}
       <button class="btn sm mt" data-act="manual">＋ 직접 입력</button>
@@ -123,13 +134,16 @@ function renderStats() {
   let from, to, items;
   if (statMode === 'week') {
     from = startOfWeek(anchor); to = addDays(from, 6);
-    items = Array.from({ length: 7 }, (_, i) => { const d = addDays(from, i); return { label: `${WEEK[parseYmd(d).getDay()]} ${parseYmd(d).getDate()}`, value: T.secOnDate(d), hi: d === selDay, date: d }; });
+    items = Array.from({ length: 7 }, (_, i) => { const d = addDays(from, i); return { label: `${WEEK[parseYmd(d).getDay()]} ${parseYmd(d).getDate()}`, value: secFor(d), hi: d === selDay, date: d }; });
   } else {
     const a = parseYmd(anchor);
     from = ymd(new Date(a.getFullYear(), a.getMonth(), 1)); to = ymd(new Date(a.getFullYear(), a.getMonth() + 1, 0));
   }
-  const sessions = T.sessionsBetween(from, to);
-  const total = sessions.reduce((s, x) => s + x.sec, 0) + (state.run.study && today() >= from && today() <= to ? T.studyElapsed() : 0);
+  const allSessions = T.sessionsBetween(from, to);
+  const sessions = statKind === 'self' ? allSessions.filter((x) => T.modeOf(x) === 'self') : allSessions;
+  const runAdd = state.run.study && today() >= from && today() <= to && (statKind === 'all' || T.modeOf(state.run.study) === 'self') ? T.studyElapsed() : 0;
+  const total = sessions.reduce((s, x) => s + x.sec, 0) + runAdd;
+  const classSec = allSessions.filter((x) => T.modeOf(x) !== 'self').reduce((a, b) => a + b.sec, 0);
   const days = new Set(sessions.map((s) => s.date)).size;
   const nDays = Math.max(1, Math.min(daysBetween(from, to) + 1, daysBetween(from, today()) + 1));
   const label = statMode === 'week' ? `${fmtDate(from).replace(/ \(.\)/, '')} ~ ${fmtDate(to).replace(/ \(.\)/, '')}` : `${from.slice(0, 4)}년 ${Number(from.slice(5, 7))}월`;
@@ -140,7 +154,7 @@ function renderStats() {
     const first = parseYmd(from);
     const lead = (first.getDay() + 6) % 7;
     const last = parseYmd(to).getDate();
-    const vals = Array.from({ length: last }, (_, i) => T.secOnDate(addDays(from, i)));
+    const vals = Array.from({ length: last }, (_, i) => secFor(addDays(from, i)));
     const max = Math.max(3600, ...vals);
     body = `<div class="cal">${['월', '화', '수', '목', '금', '토', '일'].map((w) => `<div class="wd">${w}</div>`).join('')}
       ${'<div class="day out"></div>'.repeat(lead)}
@@ -153,18 +167,20 @@ function renderStats() {
   }
 
   return `<div class="row mb">${seg([['week', '주간'], ['month', '월간']], statMode).replace('class="seg"', 'class="seg" style="margin:0"').replaceAll('data-seg', 'data-smode')}
+      ${seg([['self', '순공만'], ['all', '학원·인강 포함']], statKind).replace('class="seg"', 'class="seg" style="margin:0"').replaceAll('data-seg', 'data-skind')}
       <span class="spacer"></span><button class="btn sm" data-act="manual">＋ 직접 입력</button></div>
     <div class="date-nav"><button class="btn sm" data-nav="-1">‹</button><span class="label">${label}</span><button class="btn sm" data-nav="1">›</button>
       <button class="btn sm ghost" data-nav="0">오늘</button></div>
     <div class="grid two">
       <div class="card"><div class="stats mb">
-          <div class="stat"><b>${fmtDur(total)}</b><span>총 공부</span></div>
+          <div class="stat"><b>${fmtDur(total)}</b><span>${statKind === 'self' ? '순공' : '총 공부'}</span></div>
+          ${statKind === 'self' ? `<div class="stat"><b>${fmtDur(classSec)}</b><span>학원·인강 (별도)</span></div>` : ''}
           <div class="stat"><b>${fmtDur(total / nDays)}</b><span>하루 평균</span></div>
           <div class="stat"><b>${days}일</b><span>공부한 날</span></div>
           <div class="stat"><b>${sessions.filter((s) => s.kind === 'pomo').length}</b><span></span></div>
         </div>${body}</div>
       <div class="card"><h3>과목별</h3>${subjectLegend(sessions)}</div>
-      <div class="card"><h3>${fmtDate(selDay)} 기록 <span class="right num">${fmtDur(T.secOnDate(selDay))}</span></h3>${sessionList(selDay)}</div>
+      <div class="card"><h3>${fmtDate(selDay)} 기록 <span class="right num">순공 ${fmtDur(T.selfSecOnDate(selDay))} · 총 ${fmtDur(T.secOnDate(selDay))}</span></h3>${sessionList(selDay)}</div>
     </div>`;
 }
 
@@ -182,6 +198,8 @@ export default {
       if (segB) { tab = segB.dataset.seg; return re(); }
       const sm = t.closest('[data-smode]');
       if (sm) { statMode = sm.dataset.smode; return re(); }
+      const sk = t.closest('[data-skind]'); if (sk) { statKind = sk.dataset.skind; return re(); }
+      const mp = t.closest('[data-mode-pick]'); if (mp) { T.studySetMode(mp.dataset.modePick); return re(); }
       const subj = t.closest('[data-subj]');
       if (subj) {
         if (state.run.study) T.studySetSubject(subj.dataset.subj);
@@ -233,7 +251,12 @@ export default {
     if (tickFn) removeEventListener('tick', tickFn);
     tickFn = () => {
       const c = el.querySelector('[data-clock]');
-      if (c) { c.textContent = fmtClock(T.studyElapsed()); const td = el.querySelector('[data-today]'); if (td) td.textContent = fmtDur(T.secOnDate(today())); }
+      if (c) {
+        c.textContent = fmtClock(T.studyElapsed());
+        const td = el.querySelector('[data-today]'); if (td) td.textContent = fmtDur(T.secOnDate(today()));
+        const sf = el.querySelector('[data-self]'); if (sf) sf.textContent = fmtDur(T.selfSecOnDate(today()));
+        const gp = el.querySelector('[data-goalp]'); if (gp) gp.style.width = `${Math.min(100, (T.selfSecOnDate(today()) / (state.profile.goalMinutes * 60)) * 100)}%`;
+      }
       const pc = el.querySelector('[data-pclock]');
       if (pc) { const rem = T.pomoRemaining(); pc.textContent = fmtMS(rem); setRing(el.querySelector('.ring-wrap'), 1 - rem / T.pomoTotal()); }
     };

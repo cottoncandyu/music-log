@@ -1,10 +1,10 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = `archive-${VERSION}`;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/app.js', './js/store.js', './js/util.js', './js/ui.js', './js/timers.js', './js/charts.js', './js/focus.js', './js/drawpad.js',
-  './js/icons.js', './js/art.js', './js/art2.js', './js/theme.js', './js/quotes.js',
+  './js/icons.js', './js/art.js', './js/art2.js', './js/art3.js', './js/decor.js', './js/theme.js', './js/quotes.js',
   './js/views/home.js', './js/views/memo.js', './js/views/timer.js', './js/views/todo.js', './js/views/dday.js',
   './js/views/diary.js', './js/views/records.js', './js/views/health.js', './js/views/share.js', './js/views/settings.js',
   './js/views/bucket.js', './js/views/music.js', './js/views/money.js', './js/views/wish.js', './js/views/calendar.js', './js/views/calc.js',

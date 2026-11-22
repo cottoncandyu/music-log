@@ -146,13 +146,16 @@ export const STICKERS = [
   { id: 'pencil', w: 0.24, svg: () => K('0 0 160 50', `<path d="M10 25 L30 12 H136 V38 H30Z" fill="#f8cf4a" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M10 25 L22 17 V33Z" fill="${INK}"/><rect x="136" y="12" width="16" height="26" rx="3" fill="#f2a3b6" stroke="${INK}" stroke-width="3"/><path d="M30 25 H130" stroke="#e2b230" stroke-width="2"/>`) },
 ];
 import { STICKER_GROUPS, PAPERS, TAPES2 } from './art2.js';
+import { DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS } from './art3.js';
+import { dateTextSvg } from './decor.js';
 export { STICKER_GROUPS, PAPERS };
-const ALL_STICKERS = () => [...STICKERS, ...STICKER_GROUPS.flatMap((g) => g.items)];
+const ALL_STICKERS = () => [...STICKERS, ...STICKER_GROUPS.flatMap((g) => g.items), ...DATE_STICKERS, ...LABEL_STICKERS, ...PATTERN_BUBBLES, ...Y2K_STICKERS];
 export const stickerSvg = (id) => {
   const s = ALL_STICKERS().find((x) => x.id === id);
   if (s) return s.svg();
   if (id.startsWith('mood:')) return moodSvg(id.slice(5));
   if (id.startsWith('weather:')) return weatherSvg(id.slice(8));
+  if (id.startsWith('dt:')) { const [, st, ymd] = id.split(':'); return dateTextSvg(st, ymd); }
   return '';
 };
 export const stickerDefaultW = (id) => (ALL_STICKERS().find((x) => x.id === id) || { w: 0.16 }).w;

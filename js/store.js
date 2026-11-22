@@ -49,6 +49,8 @@ const defaults = () => ({
   money: [],        // {id, date, type:'in'|'out', amount, category, memo}
   wishes: [],       // {id, title, price, link, priority, photo, memo, bought, boughtDate, created}
   quotes: [],       // 직접 추가한 문장 {id, text, by}
+  memoDecks: [],    // 미리 만들어 둔 메모 단원명
+  freeMemos: [],    // 자유 메모 {id, title, deck, text, page, color, pinned, hidden, created, updated}
   events: [],       // 캘린더 일정 {id, date, time, title, color, memo}
   playlists: [],    // {id, name, desc, color, cover, songs:[{id, title, artist, link}], created}
 });

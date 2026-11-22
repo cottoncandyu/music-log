@@ -7,6 +7,8 @@ import { icon } from './icons.js';
 import { modal } from './ui.js';
 import { STICKERS, MOODS, WEATHERS, ALL_TAPES, stickerSvg, stickerDefaultW, tapeSvg, moodSvg, weatherSvg, STICKER_GROUPS, PAPERS, paperSvg, paperDefaultW } from './art.js';
 import { handFont, fontPicker } from './theme.js';
+import { recordSvg, timetableSvg, todoCardSvg, dateTextSvg, DATE_TEXT_STYLES } from './decor.js';
+import { collageSvg, DATE_STICKERS, LABEL_STICKERS, PATTERN_BUBBLES, Y2K_STICKERS } from './art3.js';
 
 const W = 900, H = 1200, S = 1.5; // 논리 좌표 900×1200, 실제 픽셀 1.5배
 export const PAPER_STYLES = [['lined', '줄'], ['grid', '격자'], ['dot', '도트'], ['blank', '무지']];
@@ -142,29 +144,63 @@ export function receiptSvg(d) {
 }
 
 // ---------- 아이템 ----------
+// ---------- 사진 모양 ----------
+export const PHOTO_FRAMES = [['polaroid', '폴라로이드'], ['cutout', '스티커(흰 테두리)'], ['rounded', '둥근 사각'], ['circle', '동그라미'], ['heart', '하트'], ['star', '별'], ['cloud', '구름'], ['stamp', '우표'], ['film', '필름'], ['plain', '그대로']];
+const SHAPE_D = {
+  circle: 'M50 2 A48 48 0 1 1 49.9 2Z',
+  heart: 'M50 92 C14 70 2 50 6 32 C10 12 34 6 50 26 C66 6 90 12 94 32 C98 50 86 70 50 92Z',
+  star: (() => { let d = ''; for (let i = 0; i < 10; i++) { const r = i % 2 ? 22 : 48, a = (i / 10) * Math.PI * 2 - Math.PI / 2; d += `${i ? 'L' : 'M'}${(50 + Math.cos(a) * r).toFixed(1)} ${(53 + Math.sin(a) * r).toFixed(1)}`; } return d + 'Z'; })(),
+  cloud: (() => { const n = 8; let d = ''; for (let i = 0; i <= n; i++) { const a = (i / n) * Math.PI * 2, x = 50 + Math.cos(a) * 36, y = 52 + Math.sin(a) * 30; if (!i) d += `M${x.toFixed(1)} ${y.toFixed(1)}`; else { const am = ((i - 0.5) / n) * Math.PI * 2; d += ` Q${(50 + Math.cos(am) * 50).toFixed(1)} ${(52 + Math.sin(am) * 44).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`; } } return d + 'Z'; })(),
+};
+function photoInner(it) {
+  const f = it.frame || 'polaroid', src = it.src;
+  if (SHAPE_D[f]) {
+    const id = 'cp' + it.id;
+    return `<svg viewBox="-6 -6 112 112" class="pshape"><defs><clipPath id="${id}"><path d="${SHAPE_D[f]}"/></clipPath><filter id="f${id}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity=".25"/></filter></defs>
+      <path d="${SHAPE_D[f]}" fill="#fff" stroke="#fff" stroke-width="9" stroke-linejoin="round" filter="url(#f${id})"/><image href="${src}" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})"/></svg>`;
+  }
+  return `<div class="pframe2 fr-${f}"><img src="${src}" alt="" draggable="false"></div>`;
+}
+const TEXT_FX = [['none', '기본'], ['outline', '흰 테두리'], ['shadow', '그림자'], ['marker', '형광펜'], ['label', '라벨'], ['collage', '콜라주 글자']];
+function textStyle(it) {
+  const c = it.color || '#2b2522';
+  switch (it.fx) {
+    case 'outline': return `text-shadow:${[[2, 0], [-2, 0], [0, 2], [0, -2], [1.5, 1.5], [-1.5, 1.5], [1.5, -1.5], [-1.5, -1.5], [3, 0], [-3, 0], [0, 3], [0, -3]].map(([x, y]) => `${x * 0.06}em ${y * 0.06}em 0 #fff`).join(',')}, 0 .12em .2em rgba(0,0,0,.25);`;
+    case 'shadow': return `text-shadow:.07em .07em 0 ${c}55;`;
+    case 'marker': return `background:linear-gradient(transparent 58%, ${it.bg || '#f8e27a'}cc 58%, ${it.bg || '#f8e27a'}cc 92%, transparent 92%);`;
+    case 'label': return `background:${it.bg || '#f6d6df'};padding:.1em .4em;box-shadow:0 1px 2px rgba(0,0,0,.15);`;
+    default: return '';
+  }
+}
+
 function itemInner(it) {
   if (it.k === 'sticker') return stickerSvg(it.ref);
   if (it.k === 'tape') return tapeSvg(it.ref);
   if (it.k === 'paper') return paperSvg(it.ref);
-  if (it.k === 'record') return receiptSvg(it.data || {});
-  if (it.k === 'photo') return `<div class="polaroid ${it.frame || 'polaroid'}"><img src="${it.src}" alt="" draggable="false"></div>`;
-  if (it.k === 'text') return `<div class="ptext" style="font-family:${handFont(it.font).css};color:${it.color};font-size:${(it.f * handFont(it.font).scale).toFixed(2)}cqw">${esc(it.text)}</div>`;
+  if (it.k === 'record') return recordSvg(it.data || {});
+  if (it.k === 'timetable') return timetableSvg(it.ymd);
+  if (it.k === 'todocard') return todoCardSvg(it.ymd);
+  if (it.k === 'photo') return photoInner(it);
+  if (it.k === 'text' && it.fx === 'collage') return collageSvg(it.text, it.seed || 1);
+  if (it.k === 'text') return `<div class="ptext" style="font-family:${handFont(it.font).css};color:${it.color};font-size:${(it.f * handFont(it.font).scale).toFixed(2)}cqw;${textStyle(it)}">${esc(it.text)}</div>`;
   if (it.k === 'emoji') return `<span style="font-size:${it.s || 9}cqw;line-height:1">${esc(it.text)}</span>`;
   return '';
 }
 function itemStyle(it) {
-  const w = it.k === 'text' || it.k === 'emoji' ? '' : `width:${it.w * 100}%;`;
+  const w = (it.k === 'text' && it.fx !== 'collage') || it.k === 'emoji' ? '' : `width:${(it.k === 'text' ? (it.w || 0.4) : it.w) * 100}%;`;
   return `left:${it.x * 100}%;top:${it.y * 100}%;${w}transform:translate(-50%,-50%) rotate(${it.r || 0}deg);z-index:${it.z || 1}`;
 }
 
 function textEditor(it, onDone) {
-  let font = it.font, color = it.color;
+  let font = it.font, color = it.color, fx = it.fx || 'none', bg = it.bg || '#f8e27a';
   modal(`<h2>종이에 글쓰기<button class="icon-btn" data-close>${icon('close')}</button></h2>
     <div class="form">
       <textarea data-t style="min-height:110px;font-size:20px;font-family:${handFont(font).css}">${esc(it.text)}</textarea>
       <div class="field"><span>글씨체</span>${fontPicker('font', font)}</div>
       <label class="field"><span>색</span><div class="row">${INKS.map((c) => `<button type="button" class="sw ${c === color ? 'on' : ''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div></label>
-      <label class="field"><span>크기</span><input type="range" min="2.5" max="12" step="0.5" value="${it.f}" data-size></label>
+      <label class="field"><span>크기</span><input type="range" min="2.5" max="14" step="0.5" value="${it.f}" data-size></label>
+      <div class="field"><span>효과</span><div class="chips">${TEXT_FX.map(([k, l]) => `<button type="button" class="chip ${k === fx ? 'on' : ''}" data-fx="${k}">${l}</button>`).join('')}</div></div>
+      <div class="field" data-bgrow><span>형광펜·라벨 색</span><div class="row">${['#f8e27a', '#f6d6df', '#cfe3f6', '#d6efd0', '#e6dbf6', '#f9d9bf', '#2b2522'].map((c) => `<button type="button" class="sw ${c === bg ? 'on' : ''}" data-bg="${c}" style="background:${c}"></button>`).join('')}</div></div>
       <div class="actions"><button class="btn" data-close>취소</button><button class="btn primary" data-ok>완료</button></div>
     </div>`, {
     onMount(box, close) {
@@ -175,8 +211,14 @@ function textEditor(it, onDone) {
         if (f) { font = f.dataset.font; ta.style.fontFamily = handFont(font).css; box.querySelectorAll('[data-font]').forEach((b) => b.classList.toggle('on', b === f)); }
         const c = e.target.closest('[data-c]');
         if (c) { color = c.dataset.c; box.querySelectorAll('[data-c]').forEach((b) => b.classList.toggle('on', b === c)); }
+        const fb = e.target.closest('[data-fx]');
+        if (fb) { fx = fb.dataset.fx; box.querySelectorAll('[data-fx]').forEach((b) => b.classList.toggle('on', b === fb)); }
+        const bb = e.target.closest('[data-bg]');
+        if (bb) { bg = bb.dataset.bg; box.querySelectorAll('[data-bg]').forEach((b) => b.classList.toggle('on', b === bb)); }
         if (e.target.closest('[data-ok]')) {
           it.text = ta.value; it.font = font; it.color = color; it.f = Number(box.querySelector('[data-size]').value);
+          it.fx = fx; it.bg = bg;
+          if (fx === 'collage') { it.seed = it.seed || Math.floor(Math.random() * 1e6); it.w = it.w || Math.min(0.9, 0.08 * [...it.text].length + 0.08); }
           close(); onDone(true);
         }
       });
@@ -185,7 +227,8 @@ function textEditor(it, onDone) {
   });
 }
 
-export function createDrawPad(host, { page, legacy = '', onChange }) {
+export function createDrawPad(host, { page, legacy = '', onChange, date }) {
+  const padDate = () => date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   page.paper = page.paper || 'lined';
   page.strokes = page.strokes || [];
   page.items = page.items || [];
@@ -205,7 +248,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       <button class="tool" data-panel="sticker" title="스티커">${icon('sticker')}</button>
       <button class="tool" data-panel="tape" title="마스킹테이프">${icon('tape')}</button>
       <button class="tool" data-panel="paper" title="메모지">${icon('paper')}</button>
-      <label class="tool" title="사진 올리기">${icon('image')}<input type="file" accept="image/*" data-photo hidden></label>
+      <label class="tool" title="사진 올리기">${icon('image')}<input type="file" accept="image/*" multiple data-photo hidden></label>
       <span class="spacer"></span>
       <button class="tool" data-act="undo" title="실행 취소">${icon('undo')}</button>
       <button class="tool" data-act="clear" title="모두 지우기">${icon('trash')}</button>
@@ -231,6 +274,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       <button class="btn sm" data-act="front">${icon('front', 14)} 맨 앞</button>
       <button class="btn sm" data-act="dup">복제</button>
       <button class="btn sm danger" data-act="del">${icon('trash', 14)} 삭제</button>
+      <div class="chips frame-chips" data-frames hidden>${PHOTO_FRAMES.map(([k, l]) => `<button class="chip" data-frame="${k}">${l}</button>`).join('')}</div>
     </div>
     <div class="tiny muted mt">${P.penOnly ? '펜슬 전용 모드: 손가락 터치는 그려지지 않아요' : '애플펜슬로 쓰기 시작하면 손바닥 터치는 자동으로 무시돼요'} · 두 손가락으로 아이템 크기·각도 조절</div>`;
 
@@ -259,7 +303,9 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     const box = host.querySelector('[data-sel]');
     box.hidden = !selected;
     if (!selected) return;
-    const isText = selected.k === 'text' || selected.k === 'emoji';
+    const isText = (selected.k === 'text' && selected.fx !== 'collage') || selected.k === 'emoji';
+    const fr = box.querySelector('[data-frames]'); fr.hidden = selected.k !== 'photo';
+    if (selected.k === 'photo') fr.querySelectorAll('[data-frame]').forEach((b) => b.classList.toggle('on', b.dataset.frame === (selected.frame || 'polaroid')));
     const iw = box.querySelector('[data-iw]');
     if (isText) { iw.min = 2; iw.max = 14; iw.step = 0.25; iw.value = selected.k === 'text' ? selected.f : selected.s || 9; }
     else { iw.min = 0.05; iw.max = 1; iw.step = 0.01; iw.value = selected.w; }
@@ -267,7 +313,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     box.querySelector('[data-act=edit]').hidden = selected.k !== 'text';
   }
   const elOf = (it) => layer.querySelector(`[data-id="${it.id}"]`);
-  const applyStyle = (it) => { const e = elOf(it); if (!e) return; e.setAttribute('style', itemStyle(it)); if (it.k === 'text') e.innerHTML = itemInner(it); };
+  const applyStyle = (it) => { const e = elOf(it); if (!e) return; e.setAttribute('style', itemStyle(it)); if (it.k === 'text' && it.fx !== 'collage') e.innerHTML = itemInner(it); };
   renderItems();
 
   function setTool(t) {
@@ -295,7 +341,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
 
   // ---------- 패널 (스티커 / 테이프) ----------
   let stTab = '소품';
-  const ST_TABS = () => [['소품', STICKERS], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['감정', null], ['날씨', null]];
+  const ST_TABS = () => [['날짜', null], ['소품', STICKERS], ['Y2K', Y2K_STICKERS], ['패턴 말풍선', PATTERN_BUBBLES], ...STICKER_GROUPS.map((g) => [g.name, g.items]), ['라벨', LABEL_STICKERS], ['감정', null], ['날씨', null]];
   function renderPanel() {
     const box = host.querySelector('[data-panelbox]');
     box.hidden = !panel;
@@ -309,7 +355,12 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       const tabs = ST_TABS();
       const cur = tabs.find((t) => t[0] === stTab) || tabs[0];
       let grid;
-      if (cur[0] === '감정') grid = `<div class="st-grid small">${MOODS.map((m) => `<button data-add-st="mood:${m.id}" title="${m.label}">${moodSvg(m.id)}</button>`).join('')}</div>`;
+      if (cur[0] === '날짜') {
+        const ymd = padDate();
+        grid = `<div class="tiny muted mt">큰 날짜 (${ymd})</div><div class="st-grid wide">${DATE_TEXT_STYLES.map(([k, l]) => `<button data-add-st="dt:${k}:${ymd}" title="${l}">${dateTextSvg(k, ymd)}</button>`).join('')}</div>
+          <div class="tiny muted mt">날짜 동그라미</div><div class="st-grid small">${DATE_STICKERS.map((s) => `<button data-add-st="${s.id}">${s.svg()}</button>`).join('')}</div>
+          <div class="tiny muted mt">오늘 기록으로 만드는 카드 (기록이 바뀌면 자동으로 갱신돼요)</div><div class="row"><button class="btn sm" data-add-live="timetable">${icon('grid', 14)} 타임테이블</button><button class="btn sm" data-add-live="todocard">${icon('check', 14)} 할 일 카드</button></div>`;
+      } else if (cur[0] === '감정') grid = `<div class="st-grid small">${MOODS.map((m) => `<button data-add-st="mood:${m.id}" title="${m.label}">${moodSvg(m.id)}</button>`).join('')}</div>`;
       else if (cur[0] === '날씨') grid = `<div class="st-grid small">${WEATHERS.map((w) => `<button data-add-st="weather:${w.id}" title="${w.label}">${weatherSvg(w.id)}</button>`).join('')}</div>`;
       else grid = `<div class="st-grid">${cur[1].map((s) => `<button data-add-st="${s.id}">${s.svg()}</button>`).join('')}</div>`;
       box.innerHTML = `<div class="chips scroll">${tabs.map(([n]) => `<button class="chip ${n === cur[0] ? 'on' : ''}" data-sttab="${n}">${n}</button>`).join('')}</div>${grid}`;
@@ -392,7 +443,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       textEditor(it, () => { renderItems(); changed(); });
       return;
     }
-    if (tool === 'text' && !el) {
+    if (tool === 'text') { // 사진·카드 위에도 바로 글쓰기
       const p = rel(e);
       const it = { k: 'text', text: '', font: P.memoFont || 'gaegu', color, f: 5, x: p.x, y: p.y, r: 0 };
       textEditor(it, (ok) => { if (ok && it.text.trim()) addItem(it); });
@@ -429,7 +480,7 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
       const [a, b] = arr;
       const k = Math.hypot(b.px - a.px, b.py - a.py) / (gesture.d || 1);
       const da = ((Math.atan2(b.py - a.py, b.px - a.px) - gesture.ang) * 180) / Math.PI;
-      if (it.k === 'text') it.f = Math.min(14, Math.max(2, gesture.of * k));
+      if (it.k === 'text' && it.fx !== 'collage') it.f = Math.min(14, Math.max(2, gesture.of * k));
       else if (it.k === 'emoji') it.s = Math.min(30, Math.max(3, gesture.os * k));
       else it.w = Math.min(1.2, Math.max(0.04, gesture.ow * k));
       it.r = Math.round(gesture.or + da);
@@ -458,8 +509,16 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     const pn = e.target.closest('[data-panel]');
     if (pn) { panel = panel === pn.dataset.panel ? '' : pn.dataset.panel; renderPanel(); return; }
     const st = e.target.closest('[data-add-st]');
-    if (st) { const c = visibleCenter(); addItem({ k: 'sticker', ref: st.dataset.addSt, x: c.x, y: c.y, w: st.dataset.addSt.includes(':') ? 0.16 : stickerDefaultW(st.dataset.addSt), r: Math.round(Math.random() * 16 - 8) }); return; }
+    if (st) {
+      const ref = st.dataset.addSt, c = visibleCenter();
+      const w = ref.startsWith('dt:') ? (ref.includes(':stamp:') ? 0.26 : 0.5) : ref.includes(':') ? 0.16 : stickerDefaultW(ref);
+      addItem({ k: 'sticker', ref, x: c.x, y: c.y, w, r: ref.startsWith('dt:') ? 0 : Math.round(Math.random() * 16 - 8) }); return;
+    }
+    const fr = e.target.closest('[data-frame]');
+    if (fr && selected && selected.k === 'photo') { selected.frame = fr.dataset.frame; const el = elOf(selected); if (el) el.innerHTML = itemInner(selected); syncSel(); changed(); return; }
     const stt = e.target.closest('[data-sttab]'); if (stt) { stTab = stt.dataset.sttab; renderPanel(); return; }
+    const lv = e.target.closest('[data-add-live]');
+    if (lv) { const c = visibleCenter(); addItem({ k: lv.dataset.addLive, ymd: padDate(), x: c.x, y: c.y, w: lv.dataset.addLive === 'timetable' ? 0.36 : 0.44, r: 0 }); return; }
     const pa = e.target.closest('[data-add-paper]');
     if (pa) { const c = visibleCenter(); addItem({ k: 'paper', ref: pa.dataset.addPaper, x: c.x, y: c.y, w: paperDefaultW(pa.dataset.addPaper), r: Math.round(Math.random() * 6 - 3) }); return; }
     const tp = e.target.closest('[data-add-tape]');
@@ -502,17 +561,31 @@ export function createDrawPad(host, { page, legacy = '', onChange }) {
     if (!selected) return;
     if (e.target.matches('[data-iw]')) {
       const v = Number(e.target.value);
-      if (selected.k === 'text') selected.f = v; else if (selected.k === 'emoji') selected.s = v; else selected.w = v;
+      if (selected.k === 'text' && selected.fx !== 'collage') selected.f = v; else if (selected.k === 'emoji') selected.s = v; else selected.w = v;
       applyStyle(selected); changed();
     }
     if (e.target.matches('[data-ir]')) { selected.r = Number(e.target.value); applyStyle(selected); changed(); }
   });
   host.addEventListener('change', async (e) => {
     if (!e.target.matches('[data-photo]') || !e.target.files[0]) return;
-    const src = await resizeImage(e.target.files[0], 1000, 0.82);
+    const files = [...e.target.files].slice(0, 9);
     e.target.value = '';
     const c = visibleCenter();
-    addItem({ k: 'photo', src, frame: 'polaroid', x: c.x, y: c.y, w: 0.42, r: Math.round(Math.random() * 10 - 5) });
+    if (files.length === 1) {
+      const src = await resizeImage(files[0], 1000, 0.82);
+      addItem({ k: 'photo', src, frame: 'polaroid', x: c.x, y: c.y, w: 0.42, r: Math.round(Math.random() * 10 - 5) });
+      return;
+    }
+    // 여러 장: 콜라주 배치 (2열 또는 3열)
+    const cols = files.length <= 4 ? 2 : 3, cw = 0.9 / cols, rowsN = Math.ceil(files.length / cols);
+    const top = Math.max(0.08, Math.min(0.92 - rowsN * cw * 0.75, c.y - (rowsN * cw * 0.75) / 2));
+    for (let i = 0; i < files.length; i++) {
+      const src = await resizeImage(files[i], 800, 0.8);
+      const col = i % cols, row = Math.floor(i / cols);
+      const it = { k: 'photo', src, frame: 'rounded', x: 0.05 + cw * col + cw / 2, y: top + row * cw * 0.75 + cw * 0.36, w: cw * 0.94, r: 0 };
+      it.id = uid(); it.z = zTop(); page.items.push(it);
+    }
+    setTool('hand'); renderItems(); changed();
   });
   return { addItem: (it) => { const c = visibleCenter(); addItem({ x: c.x, y: c.y, r: 0, ...it }); pad.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
 }

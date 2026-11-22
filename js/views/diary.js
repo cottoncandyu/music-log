@@ -1,7 +1,8 @@
 import { state, save, diaryOf } from '../store.js';
 import { esc, today, fmtDate, addDays, ymd, debounce, uid, takeQuery, isYmd } from '../util.js';
 import { createDrawPad, migratePage } from '../drawpad.js';
-import { secOnDate, pomoCountOn } from '../timers.js';
+import { secOnDate, pomoCountOn, selfSecOnDate } from '../timers.js';
+import { RECORD_DESIGNS, recordSvg } from '../decor.js';
 import { toast, confirmBox, modal } from '../ui.js';
 import { icon } from '../icons.js';
 import { MOODS, WEATHERS, moodSvg, weatherSvg, moodId, weatherId, moodLabel, weatherLabel } from '../art.js';
@@ -10,8 +11,9 @@ let date = today();
 let view = 'write';
 let month = today().slice(0, 7);
 let pad = null;
-const REC_KEYS = [['study', '공부'], ['pomo', '뽀모도로'], ['todo', '할 일'], ['workout', '운동'], ['spend', '지출'], ['wake', '기상'], ['weight', '몸무게'], ['song', '노래'], ['mood', '기분'], ['weather', '날씨']];
-let recOn = { study: true, pomo: true, todo: true, workout: true, spend: true, wake: true, weight: false, song: true, mood: true, weather: true };
+const REC_KEYS = [['self', '순공'], ['study', '총 공부'], ['pomo', '뽀모도로'], ['todo', '할 일'], ['workout', '운동'], ['spend', '지출'], ['wake', '기상'], ['weight', '몸무게'], ['song', '노래'], ['mood', '기분'], ['weather', '날씨']];
+let recDesign = 'receipt';
+let recOn = { self: true, study: false, pomo: true, todo: true, workout: true, spend: true, wake: true, weight: false, song: true, mood: true, weather: true };
 
 /** 오늘의 기록: 다른 메뉴의 기록을 모아 한 장으로 */
 function recordRows(d) {
@@ -21,7 +23,9 @@ function recordRows(d) {
   const todos = state.todos.filter((t) => t.date === d);
   const wo = state.workouts.filter((x) => x.date === d).reduce((a, b) => a + Number(b.min || 0), 0);
   const spend = state.money.filter((x) => x.date === d && x.type === 'out').reduce((a, b) => a + b.amount, 0);
+  const ss = selfSecOnDate(d), sh = Math.floor(ss / 3600), sm = Math.floor((ss % 3600) / 60);
   const all = {
+    self: ss >= 60 ? [sh ? `${sh}h ${sm}m` : `${sm}m`] : null,
     study: sec >= 60 ? [h ? `${h}h ${m}m` : `${m}m`] : null,
     pomo: pomoCountOn(d) ? [`${pomoCountOn(d)}회`] : null,
     todo: todos.length ? [`${todos.filter((t) => t.done).length}/${todos.length}`] : null,
@@ -41,8 +45,15 @@ function recordCard(d) {
   return `<div class="card"><h3>${icon('receipt', 18)} 오늘의 기록 <span class="right tiny muted">다른 메뉴 기록을 모아요</span></h3>
     ${rows.length ? `<ul class="list rec-list">${rows.map((r) => `<li><input type="checkbox" data-rec="${r.k}" ${recOn[r.k] ? 'checked' : ''}><span class="txt">${r.l}</span><b class="num">${esc(r.v)}</b></li>`).join('')}</ul>`
       : '<div class="small muted">아직 모을 기록이 없어요. 공부 타이머·할 일·가계부·건강 기록이 생기면 여기에 모여요.</div>'}
-    <input type="text" data-recnote value="${esc(di.recordNote || '')}" placeholder="오늘을 한 줄로 (영수증 아래에 들어가요)" maxlength="28" class="mt">
-    <button class="btn soft block mt" data-act="attach-record">${icon('sticker', 16)} 영수증으로 종이에 붙이기</button></div>`;
+    <input type="text" data-recnote value="${esc(di.recordNote || '')}" placeholder="오늘을 한 줄로 (카드에 함께 들어가요)" maxlength="28" class="mt">
+    <div class="field mt"><span>디자인</span><div class="chips">${RECORD_DESIGNS.map(([k, l]) => `<button class="chip ${k === recDesign ? 'on' : ''}" data-recdesign="${k}">${l}</button>`).join('')}</div></div>
+    <div class="rec-preview" data-recprev>${recordSvg(recData(d))}</div>
+    <button class="btn soft block mt" data-act="attach-record">${icon('sticker', 16)} 종이에 붙이기</button>
+    <div class="row mt"><button class="btn sm" data-act="attach-tt">${icon('grid', 14)} 타임테이블 붙이기</button><button class="btn sm" data-act="attach-todo">${icon('check', 14)} 할 일 카드 붙이기</button></div></div>`;
+}
+function recData(d) {
+  const di = state.diaries[d] || {};
+  return { design: recDesign, ymd: d, date: fmtDate(d, true), rows: recordRows(d).filter((r) => recOn[r.k]).map((r) => [r.l, r.v]), note: di.recordNote || '', self: selfSecOnDate(d), goal: state.profile.goalMinutes * 60, song: di.song?.title ? `${di.song.title}${di.song.artist ? ' - ' + di.song.artist : ''}` : '' };
 }
 
 const songLinks = (q) => `<a class="btn sm" target="_blank" rel="noopener" href="https://music.youtube.com/search?q=${q}">YouTube Music</a><a class="btn sm" target="_blank" rel="noopener" href="https://www.melon.com/search/total/index.htm?q=${q}">멜론</a>`;
@@ -113,7 +124,7 @@ export default {
       const d0 = diaryOf(date);
       const page = d0 ? migratePage(d0) : { paper: 'lined', strokes: [], items: [] };
       pad = createDrawPad(el.querySelector('[data-pad]'), {
-        page, legacy: d0?.drawing || '',
+        page, legacy: d0?.drawing || '', date,
         onChange: (pg, extra) => {
           const d = get();
           d.page = pg;
@@ -156,18 +167,22 @@ export default {
       const v = t.closest('[data-view]');
       if (v) { modal(`<img src="${get().photos[Number(v.dataset.view)]}" alt="" style="width:100%;border-radius:12px;display:block"><div class="actions"><button class="btn primary" data-close>닫기</button></div>`, { wide: true }); return; }
       if (t.closest('[data-act=attach-record]')) {
-        const d = get();
-        const rows = recordRows(date).filter((r) => recOn[r.k]).map((r) => [r.l, r.v]);
-        if (!rows.length && !d.recordNote) return toast('붙일 기록이 없어요');
-        pad && pad.addItem({ k: 'record', w: 0.42, data: { date: fmtDate(date, true), rows, note: d.recordNote || '' } });
+        const data = recData(date);
+        if (!data.rows.length && !data.note) return toast('붙일 기록이 없어요');
+        const w = { receipt: 0.42, ticket: 0.6, boarding: 0.62, report: 0.46, player: 0.4, daily: 0.38 }[recDesign] || 0.42;
+        pad && pad.addItem({ k: 'record', w, data });
         return toast('오늘의 기록을 붙였어요');
       }
+      const rd = t.closest('[data-recdesign]');
+      if (rd) { recDesign = rd.dataset.recdesign; el.querySelectorAll('[data-recdesign]').forEach((b) => b.classList.toggle('on', b === rd)); el.querySelector('[data-recprev]').innerHTML = recordSvg(recData(date)); return; }
+      if (t.closest('[data-act=attach-tt]')) { pad && pad.addItem({ k: 'timetable', ymd: date, w: 0.36 }); return toast('타임테이블을 붙였어요'); }
+      if (t.closest('[data-act=attach-todo]')) { pad && pad.addItem({ k: 'todocard', ymd: date, w: 0.44 }); return toast('할 일 카드를 붙였어요'); }
       if (t.closest('[data-act=delete]')) {
         if (await confirmBox(`${fmtDate(date)} 다이어리를 모두 지울까요?`, '삭제')) { delete state.diaries[date]; save(); re(); }
       }
     };
     el.onchange = (e) => {
-      if (e.target.dataset.rec) recOn[e.target.dataset.rec] = e.target.checked;
+      if (e.target.dataset.rec) { recOn[e.target.dataset.rec] = e.target.checked; const pv = el.querySelector('[data-recprev]'); if (pv) pv.innerHTML = recordSvg(recData(date)); }
     };
     el.oninput = (e) => {
       if (e.target.matches('[data-recnote]')) { get().recordNote = e.target.value; persist(); return; }
