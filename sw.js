@@ -1,5 +1,5 @@
 // 오프라인 지원: 앱 파일을 캐시. 앱을 수정하면 VERSION을 올려주세요.
-const VERSION = 'v11';
+const VERSION = 'v12';
 const CACHE = `archive-${VERSION}`;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css', './css/kfonts.css',
@@ -13,7 +13,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
@@ -25,7 +25,8 @@ self.addEventListener('fetch', (e) => {
   // 같은 출처: 네트워크 우선(최신 반영) → 실패 시 캐시
   if (url.origin === location.origin) {
     e.respondWith(
-      fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; })
+      // cache: 'no-cache' → 브라우저에 저장된 옛 파일 대신 항상 서버에 새 버전이 있는지 확인
+      fetch(req, { cache: 'no-cache' }).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; })
         .catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || caches.match('./index.html')))
     );
     return;
@@ -35,3 +36,4 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(caches.match(req).then((r) => r || fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; })));
   }
 });
+self.addEventListener('message', (e) => { if (e.data === 'skipWaiting') self.skipWaiting(); });

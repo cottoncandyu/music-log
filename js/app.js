@@ -148,7 +148,34 @@ async function start() {
   updateRunningPill();
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    // 홈 화면 앱은 예전 저장본을 쓰기 쉬워서: 열 때마다 새 버전 확인 → 있으면 받아서 한 번 새로고침
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloading) return;
+      reloading = true; flushAndReload();
+    });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+      const check = () => reg.update().catch(() => {});
+      check();
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+      setInterval(check, 30 * 60 * 1000);
+    }).catch(() => {});
   }
 }
+function flushAndReload() {
+  // 입력 중인 내용이 저장된 뒤 새로고침
+  import('./store.js').then((m) => { m.flush(); setTimeout(() => location.reload(), 400); });
+}
+/** 설정의 '앱 새로 받기': 저장본을 모두 지우고 최신 파일로 다시 시작 (기록은 그대로) */
+export async function hardRefresh() {
+  try {
+    const regs = await navigator.serviceWorker?.getRegistrations?.() || [];
+    await Promise.all(regs.map((r) => r.unregister()));
+    const keys = await caches?.keys?.() || [];
+    await Promise.all(keys.filter((k) => !/font/.test(k)).map((k) => caches.delete(k)));
+  } catch { /* noop */ }
+  flushAndReload();
+}
+export const APP_VERSION = 'v12';
 start();

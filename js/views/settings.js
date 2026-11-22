@@ -82,6 +82,11 @@ export default {
           <hr><button class="btn danger sm" data-act="reset">모든 데이터 초기화</button>
         </div>
 
+        <div class="card"><h3>${icon('refresh', 18)} 앱 업데이트</h3>
+          <p class="small muted">지금 버전: <b data-ver></b><br>홈 화면 앱에 새 기능이 안 보이면 아래 버튼을 눌러주세요. 저장해 둔 앱 파일만 새로 받고, <b>기록은 그대로 남아요.</b></p>
+          <button class="btn primary" data-act="hard-refresh">${icon('refresh', 16)} 앱 새로 받기</button>
+        </div>
+
         <div class="card"><h3>${icon('screen', 18)} 홈 화면에 앱으로 추가</h3>
           <ol class="small" style="padding-left:18px;margin:0;line-height:1.9">
             <li><b>Safari</b>로 ARCHIVE 주소를 열어요 (크롬·네이버 앱 X)</li>
@@ -93,6 +98,7 @@ export default {
         </div>
       </div>`;
 
+    import('../app.js').then((m) => { const v = el.querySelector('[data-ver]'); if (v) v.textContent = m.APP_VERSION; });
     if (this._unsync) this._unsync();
     this._unsync = mountSyncCard(el.querySelector('[data-synccard]'));
     if (scrollToWidgets) setTimeout(() => el.querySelector('#widgets')?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -152,6 +158,7 @@ export default {
         return;
       }
       const a = e.target.closest('[data-act]')?.dataset.act;
+      if (a === 'hard-refresh') { toast('최신 버전을 받는 중…'); const m = await import('../app.js'); return m.hardRefresh(); }
       if (a === 'accent-reset') { p.accent = ''; save(); theme(); re(); }
       if (a === 'radius-reset') { p.radius = -1; save(); theme(); re(); }
       if (a === 'bg-del') { p.bgImage = ''; save(); theme(); re(); }
