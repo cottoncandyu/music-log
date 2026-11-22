@@ -872,3 +872,11 @@ a.card.dday-hero, .card.dday-hero { color: var(--accent-ink); }
 .leaf { z-index: 30; }
 .fan ~ .book-wrap .spread.two { width: min(100%, calc((100dvh - 420px) * 1.5)); }
 .fan ~ .book-wrap .spread.one { width: min(100%, calc((100dvh - 420px) * .75)); }
+
+/* ===== v6: 지우개 ===== */
+.pad-tools .tool.labeled { flex-direction: column; gap: 0; padding: 3px 8px; line-height: 1; }
+.pad-tools .tool.labeled small { font-size: 9.5px; color: var(--muted); margin-top: 2px; }
+.pad-tools .tool.labeled.on small { color: var(--text); font-weight: 700; }
+.eraser-opts { background: var(--surface2); border-radius: var(--radius); padding: 6px 10px; }
+.eraser-opts input[type=range] { width: 160px; }
+.eraser-dot { display: inline-block; border-radius: 50%; border: 1.5px dashed var(--muted); background: var(--surface); flex: 0 0 auto; }

@@ -238,14 +238,15 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
   page.items = page.items || [];
   const P = state.profile;
   let tool = 'pen', color = INKS[0], size = 3.5, selected = null, panel = '', sawPen = false;
+  let eraserSize = P.eraserSize || 24; // 지우개 지름 (종이 900 기준)
   const undo = [];
 
   host.innerHTML = `
     <div class="pad-tools">
       <button class="tool on" data-tool="pen" title="펜">${icon('pen')}</button>
       <button class="tool" data-tool="marker" title="형광펜">${icon('marker')}</button>
-      <button class="tool" data-tool="stroke" title="획 지우개 (한 획씩)">${icon('strokeErase')}</button>
-      <button class="tool" data-tool="erase" title="부분 지우개">${icon('eraser')}</button>
+      <button class="tool labeled" data-tool="stroke" title="한 획 지우개: 닿은 획을 통째로 지워요">${icon('strokeErase')}<small>한 획</small></button>
+      <button class="tool labeled" data-tool="erase" title="부분 지우개: 문지른 부분만 지워요">${icon('eraser')}<small>부분</small></button>
       <span class="sep"></span>
       <button class="tool" data-tool="hand" title="옮기기·크기 조절">${icon('hand')}</button>
       <button class="tool" data-tool="text" title="글쓰기">${icon('text')}</button>
@@ -256,6 +257,13 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
       <span class="spacer"></span>
       <button class="tool" data-act="undo" title="실행 취소">${icon('undo')}</button>
       <button class="tool" data-act="clear" title="모두 지우기">${icon('trash')}</button>
+    </div>
+    <div class="pad-tools eraser-opts" data-eraseropts hidden>
+      <div class="seg" style="margin:0"><button data-tool="stroke">한 획 지우개</button><button data-tool="erase">부분 지우개</button></div>
+      <span class="small muted">크기</span>
+      <input type="range" min="6" max="200" step="2" value="${eraserSize}" data-esize aria-label="지우개 크기">
+      <span class="eraser-dot" data-edot></span>
+      <span class="tiny muted" data-ehint></span>
     </div>
     <div class="pad-tools" data-penopts>
       ${INKS.map((c, i) => `<button class="sw ${i === 0 ? 'on' : ''}" data-color="${c}" style="background:${c}" aria-label="펜 색"></button>`).join('')}
@@ -320,11 +328,20 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
   const applyStyle = (it) => { const e = elOf(it); if (!e) return; e.setAttribute('style', itemStyle(it)); if (it.k === 'text' && it.fx !== 'collage') e.innerHTML = itemInner(it); };
   renderItems();
 
+  function syncEraserDot() {
+    const d = host.querySelector('[data-edot]'); if (!d) return;
+    const px = Math.max(4, (eraserSize / W) * cv.getBoundingClientRect().width || eraserSize / 2);
+    d.style.width = d.style.height = px + 'px';
+    host.querySelectorAll('[data-eraseropts] [data-tool]').forEach((b) => b.classList.toggle('on', b.dataset.tool === tool));
+  }
   function setTool(t) {
     tool = t;
     host.querySelectorAll('[data-tool]').forEach((b) => b.classList.toggle('on', b.dataset.tool === t));
     pad.classList.toggle('arrange', t === 'hand' || t === 'text');
     host.querySelector('[data-penopts]').hidden = !(t === 'pen' || t === 'marker');
+    host.querySelector('[data-eraseropts]').hidden = !(t === 'erase' || t === 'stroke');
+    host.querySelector('[data-ehint]').textContent = t === 'stroke' ? '닿은 획을 통째로 지워요' : t === 'erase' ? '문지른 부분만 지워요' : '';
+    syncEraserDot();
     if (t !== 'hand') { selected = null; renderItems(); }
   }
   const zTop = () => Math.max(0, ...page.items.map((i) => i.z || 0)) + 1;
@@ -383,11 +400,20 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
     cv.setPointerCapture(e.pointerId);
     const p = pos(e);
     if (tool === 'stroke') { stroke = { id: e.pointerId, erase: true }; eraseAt(p); return; }
-    const s = { t: tool === 'erase' ? 'erase' : tool, c: color, w: size, pen: e.pointerType === 'pen', p: [...p] };
+    const s = { t: tool === 'erase' ? 'erase' : tool, c: color, w: tool === 'erase' ? eraserSize / 3 : size, pen: e.pointerType === 'pen', p: [...p] };
     stroke = { id: e.pointerId, s, last: p, lastMid: p };
     if (s.t !== 'marker') drawStroke(ctx, { ...s, p: [...p] });
   });
+  // 지우개 크기를 보여주는 동그라미
+  const ring = (p) => {
+    lctx.save(); lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.clearRect(0, 0, live.width, live.height); lctx.restore();
+    if (!p || !(tool === 'erase' || tool === 'stroke')) return;
+    lctx.save(); lctx.strokeStyle = tool === 'stroke' ? '#d9534f' : '#888'; lctx.lineWidth = 1.5; lctx.setLineDash([4, 3]);
+    lctx.beginPath(); lctx.arc(p[0], p[1], eraserSize / 2, 0, Math.PI * 2); lctx.stroke(); lctx.restore();
+  };
+  cv.addEventListener('pointerleave', () => { if (!stroke) ring(null); });
   cv.addEventListener('pointermove', (e) => {
+    if ((tool === 'erase' || tool === 'stroke') && !ignoreTouch(e)) ring(pos(e));
     if (!stroke || e.pointerId !== stroke.id) return;
     const evs = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
     for (const ev of evs.length ? evs : [e]) {
@@ -414,6 +440,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
   const end = (e) => {
     if (!stroke || e.pointerId !== stroke.id) return;
     const st = stroke; stroke = null;
+    if (e.pointerType !== 'mouse') ring(null);
     if (st.erase) { if (st.removed?.length) { undo.push({ a: 'del', list: st.removed }); changed(); } return; }
     const s = st.s;
     if (P.inkCorrect && s.t !== 'erase') s.p = correct(s.p, P.inkStrength || 3);
@@ -429,7 +456,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
 
   function eraseAt([x, y]) {
     const hit = [];
-    page.strokes.forEach((s, i) => { if (s.t !== 'erase' && hitStroke(s, x, y, 10)) hit.push(i); });
+    page.strokes.forEach((s, i) => { if (s.t !== 'erase' && hitStroke(s, x, y, eraserSize / 2)) hit.push(i); });
     if (!hit.length) return;
     stroke.removed = stroke.removed || [];
     for (let k = hit.length - 1; k >= 0; k--) stroke.removed.push({ i: hit[k], s: page.strokes.splice(hit[k], 1)[0] });
@@ -561,6 +588,7 @@ export function createDrawPad(host, { page, legacy = '', onChange, date }) {
   });
   host.addEventListener('input', (e) => {
     if (e.target.matches('[data-size]') && e.target.closest('[data-penopts]')) size = Number(e.target.value);
+    if (e.target.matches('[data-esize]')) { eraserSize = Number(e.target.value); P.eraserSize = eraserSize; save(); syncEraserDot(); }
     if (e.target.matches('[data-custom]')) { color = e.target.value; host.querySelectorAll('[data-color]').forEach((b) => b.classList.remove('on')); }
     if (!selected) return;
     if (e.target.matches('[data-iw]')) {

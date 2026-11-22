@@ -1,6 +1,7 @@
 // 다꾸북 — 여러 장짜리 꾸미기 노트. 책장 → 펼친 두 페이지(넘김 효과) → 페이지 꾸미기
 import { state, save } from '../store.js';
-import { esc, uid, today } from '../util.js';
+import { esc, uid, today, fmtDate } from '../util.js';
+import { migratePage } from '../drawpad.js';
 import { modal, confirmBox, toast } from '../ui.js';
 import { icon } from '../icons.js';
 import { createDrawPad, renderPagePreview, PAPER_STYLES } from '../drawpad.js';
@@ -13,6 +14,18 @@ let openId = null;   // 열어 둔 노트
 let spread = 0;      // 펼친 면 번호 (두 페이지 기준)
 let editIdx = null;  // 꾸미는 중인 페이지
 let showFan = false;
+
+const DIARY_ID = '__diary__';
+/** 하루 다이어리를 자동으로 모은 노트 (복사본이 아니라 다이어리 기록을 그대로 보여줌) */
+function diaryBook() {
+  const dates = Object.keys(state.diaries).filter((d) => { const x = state.diaries[d]; return x && ((x.page && ((x.page.strokes || []).length || (x.page.items || []).length)) || x.drawing || x.stickers?.length); }).sort();
+  return {
+    id: DIARY_ID, title: '하루 다이어리', color: '#6e695f', pattern: 'kraft', paper: 'lined', virtual: true,
+    pages: dates.map((d) => ({ id: 'd-' + d, date: d, page: migratePage(state.diaries[d]) })),
+    updated: Infinity,
+  };
+}
+const findBook = (id) => (id === DIARY_ID ? diaryBook() : state.journals.find((x) => x.id === id));
 
 const wide = () => (document.getElementById('main')?.clientWidth || innerWidth) >= 760;
 const perView = () => (wide() ? 2 : 1);
@@ -54,7 +67,8 @@ function notebookForm(j, after) {
 }
 
 function shelf(el) {
-  const list = state.journals.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  const db = diaryBook();
+  const list = [...(db.pages.length ? [db] : []), ...state.journals.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0))];
   el.innerHTML = `
     <div class="row mb"><button class="btn primary" data-act="new">${icon('plus', 16)} 새 다꾸북</button><span class="spacer"></span><a class="btn ghost sm" href="#/diary">하루 다이어리로</a></div>
     ${list.length ? `<div class="shelf">${list.map((j) => `
@@ -62,13 +76,14 @@ function shelf(el) {
         <div class="nb-stack">${j.pages.slice(0, 3).map(() => '<i></i>').join('')}</div>
         <div class="nb-cover pat-${j.pattern}" style="${coverStyle(j)}">
           <div class="nb-window" data-prev="${j.id}"></div>
-          <div class="nb-label"><b>${esc(j.title)}</b><span>${j.pages.length} Pages</span></div>
+          <div class="nb-label"><b>${esc(j.title)}</b><span>${j.virtual ? `자동 · ${j.pages.length}일` : `${j.pages.length} Pages`}</span></div>
         </div>
       </button>`).join('')}</div>`
       : '<div class="card empty">여러 장으로 이어지는 꾸미기 노트예요.<br>사진·스티커·말랑 글자로 ABOUT ME, 여행, 공부 기록장을 만들어 보세요.</div>'}`;
   list.forEach((j) => { const w = el.querySelector(`[data-prev="${j.id}"]`); if (w && j.pages[0]) renderPagePreview(w, j.pages[0].page, 0.25); });
   el.onclick = (e) => {
-    const o = e.target.closest('[data-open]'); if (o) { openId = o.dataset.open; spread = 0; editIdx = null; return render(el); }
+    const o = e.target.closest('[data-open]');
+    if (o) { openId = o.dataset.open; editIdx = null; spread = openId === DIARY_ID ? 1e6 : 0; return render(el); }
     if (e.target.closest('[data-act=new]')) notebookForm(null, (j) => { if (j) { openId = j.id; spread = 0; } render(el); });
   };
 }
@@ -84,14 +99,15 @@ function book(el, j) {
       <div class="book-title"><b>${esc(j.title)}</b><span class="tiny muted">${j.pages.length} Pages</span></div>
       <span class="spacer"></span>
       <button class="btn sm ${showFan ? 'soft' : ''}" data-act="fan">${icon('grid', 14)} 모아보기</button>
-      <button class="btn sm" data-act="info">${icon('edit', 14)} 표지</button>
-      <button class="btn sm primary" data-act="add">${icon('plus', 14)} 페이지</button></div>
+      ${j.virtual ? `<a class="btn sm primary" href="#/diary">${icon('plus', 14)} 오늘 다이어리 쓰기</a></div>
+    <p class="tiny muted mb">다이어리의 꾸미기 페이지가 날짜순으로 자동으로 모여요. 페이지를 누르면 그 날 다이어리로 가요.</p>` : `<button class="btn sm" data-act="info">${icon('edit', 14)} 표지</button>
+      <button class="btn sm primary" data-act="add">${icon('plus', 14)} 페이지</button></div>`}
     ${showFan ? `<div class="fan">${j.pages.map((p, i) => `<button class="fan-page ${i >= first && i < first + pv ? 'on' : ''}" data-jump="${i}" style="--i:${i};--n:${j.pages.length}"><div data-fp="${i}"></div><span>${i + 1}</span></button>`).join('')}</div>` : ''}
     <div class="book-wrap">
       <button class="flip-btn left" data-act="prev" ${spread ? '' : 'disabled'} aria-label="이전">${icon('left', 22)}</button>
       <div class="spread ${pv === 2 ? 'two' : 'one'}" data-spread style="${coverStyle(j)}">
-        ${idxs.map((i, k) => j.pages[i] ? `<div class="bpage ${pv === 2 ? (k ? 'right' : 'left') : ''}" data-edit="${i}"><div data-bp="${i}"></div><span class="pno">${i + 1}</span><span class="edit-hint">${icon('pen', 14)} 탭해서 꾸미기</span></div>`
-          : `<button class="bpage empty-page ${k ? 'right' : 'left'}" data-act="add">${icon('plus', 22)}<span>페이지 추가</span></button>`).join('')}
+        ${idxs.map((i, k) => j.pages[i] ? `<div class="bpage ${pv === 2 ? (k ? 'right' : 'left') : ''}" data-edit="${i}"><div data-bp="${i}"></div><span class="pno">${j.virtual ? fmtDate(j.pages[i].date) : i + 1}</span><span class="edit-hint">${icon('pen', 14)} 탭해서 꾸미기</span></div>`
+          : j.virtual ? `<div class="bpage empty-page ${k ? 'right' : 'left'}"><span>다음 다이어리를 기다리는 중</span></div>` : `<button class="bpage empty-page ${k ? 'right' : 'left'}" data-act="add">${icon('plus', 22)}<span>페이지 추가</span></button>`).join('')}
       </div>
       <button class="flip-btn right" data-act="next" ${spread < maxSpread ? '' : 'disabled'} aria-label="다음">${icon('right', 22)}</button>
     </div>
@@ -106,7 +122,11 @@ function book(el, j) {
   };
   el.onclick = (e) => {
     const jp = e.target.closest('[data-jump]'); if (jp) { spread = Math.floor(Number(jp.dataset.jump) / pv); return render(el); }
-    const ed = e.target.closest('[data-edit]'); if (ed && !swiped) { editIdx = Number(ed.dataset.edit); return render(el); }
+    const ed = e.target.closest('[data-edit]');
+    if (ed && !swiped) {
+      if (j.virtual) { location.hash = `#/diary?date=${j.pages[Number(ed.dataset.edit)].date}`; return; }
+      editIdx = Number(ed.dataset.edit); return render(el);
+    }
     const a = e.target.closest('[data-act]')?.dataset.act;
     if (a === 'shelf') { openId = null; return render(el); }
     if (a === 'fan') { showFan = !showFan; return render(el); }
@@ -191,9 +211,9 @@ function editor(el, j) {
 }
 
 function render(el) {
-  const j = openId && state.journals.find((x) => x.id === openId);
+  const j = openId && findBook(openId);
   if (!j) { openId = null; return shelf(el); }
-  if (editIdx != null) return editor(el, j);
+  if (editIdx != null && !j.virtual) return editor(el, j);
   return book(el, j);
 }
 
